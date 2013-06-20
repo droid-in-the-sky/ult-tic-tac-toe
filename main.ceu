@@ -40,30 +40,43 @@ var _SDL_Texture* tex_x;
         _SDL_DestroyTexture(tex_x);
     end
     _assert(tex_x != null);
+var _SDL_Texture* tex_xx;
+    finalize
+        tex_xx = _IMG_LoadTexture(ren, "imgs/xx.png");
+    with
+        _SDL_DestroyTexture(tex_xx);
+    end
+    _assert(tex_xx != null);
+var _SDL_Texture* tex_xxx;
+    finalize
+        tex_xxx = _IMG_LoadTexture(ren, "imgs/xxx.png");
+    with
+        _SDL_DestroyTexture(tex_xxx);
+    end
+    _assert(tex_xxx != null);
 
 var _SDL_Texture* tex_o;
     finalize
-        tex_o = _IMG_LoadTexture(ren, "imgs/oo.png");
+        tex_o = _IMG_LoadTexture(ren, "imgs/o.png");
     with
         _SDL_DestroyTexture(tex_o);
     end
     _assert(tex_o != null);
-
-var _SDL_Texture* tex_X;
+var _SDL_Texture* tex_oo;
     finalize
-        tex_X = _IMG_LoadTexture(ren, "imgs/xx.png");
+        tex_oo = _IMG_LoadTexture(ren, "imgs/oo.png");
     with
-        _SDL_DestroyTexture(tex_X);
+        _SDL_DestroyTexture(tex_oo);
     end
-    _assert(tex_X != null);
-
-var _SDL_Texture* tex_O;
+    _assert(tex_oo != null);
+var _SDL_Texture* tex_ooo;
     finalize
-        tex_O = _IMG_LoadTexture(ren, "imgs/oo.png");
+        tex_ooo = _IMG_LoadTexture(ren, "imgs/ooo.png");
     with
-        _SDL_DestroyTexture(tex_O);
+        _SDL_DestroyTexture(tex_ooo);
     end
-    _assert(tex_O != null);
+    _assert(tex_ooo != null);
+
 
 var _SDL_Texture* tex_new;
     finalize
@@ -196,9 +209,9 @@ with
                         this.clr_bg? = 1;
                         this.clr_bg  = _colors.gray;
                         if global:player == 1 then
-                            this.tex = tex_X;
+                            this.tex = tex_xx;
                         else
-                            this.tex = tex_O;
+                            this.tex = tex_oo;
                         end
                     end;
                     emit grid.go_ui => (id,ui);
@@ -244,9 +257,9 @@ with
                 this.clr_bg? = 1;
                 this.clr_bg  = _colors.gray;
                 if global:player == 1 then
-                    this.tex = tex_X;
+                    this.tex = tex_xxx;
                 else
-                    this.tex = tex_O;
+                    this.tex = tex_ooo;
                 end
             end;
             emit final.go_redim => &r;

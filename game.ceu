@@ -165,17 +165,17 @@ var _SDL_Renderer* ren;
     end
 
 // images X - O
-var _SDL_Texture* tex_X;
+var _SDL_Texture* tex_xx;
     finalize
-        tex_X = _IMG_LoadTexture(ren, "imgs/xx.png");
+        tex_xx = _IMG_LoadTexture(ren, "imgs/xx.png");
     with
-        _SDL_DestroyTexture(tex_X);
+        _SDL_DestroyTexture(tex_xx);
     end
-var _SDL_Texture* tex_O;
+var _SDL_Texture* tex_oo;
     finalize
-        tex_O = _IMG_LoadTexture(ren, "imgs/oo.png");
+        tex_oo = _IMG_LoadTexture(ren, "imgs/oo.png");
     with
-        _SDL_DestroyTexture(tex_O);
+        _SDL_DestroyTexture(tex_oo);
     end
 
 par/or do
@@ -209,9 +209,9 @@ with
                 this.clr_bg.b = 0x77;
                 this.clr_bg.a = 0x77;       // TODO
                 if global:player == 1 then
-                    this.tex = tex_X;
+                    this.tex = tex_xx;
                 else
-                    this.tex = tex_O;
+                    this.tex = tex_oo;
                 end
             end;
             emit ui:go_redim => &r;
