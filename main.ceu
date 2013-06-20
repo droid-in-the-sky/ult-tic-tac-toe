@@ -3,10 +3,10 @@ import colors.ceu;
 import uigrid.ceu;
 
 interface Global with
-    event (int,int) ok_game;   // id,idx
+    event (void*,int) ok_game;   // id,idx
     var int player;
 end
-event (int,int) ok_game;
+event (void*,int) ok_game;
 var int player;
 
 import game.ceu;
@@ -172,99 +172,111 @@ with
         par/or do
             await ui_new.ok_clicked;
         with
-            var s8[9] state;
-                loop i, 9 do
-                    state[i] = 0;
-                end
-
-            var int gi = 0;
-            var Game[9] games with
-                this.id  = gi;
-                this.ren = ren;
-                this.grid.clr_ui_bg = _colors.yellow;
-                grid.uis[gi] = &this.grid;
-                gi = gi + 1;
-            end;
-
             var _SDL_Rect r;
                 r.w = win_w;
                 r.h = win_h;
                 r.x = 0;
                 r.y = 0;
-            emit main.go_redim => &r;
 
-            ui_x.clr_bg  = _colors.yellow;
-            ui_o.clr_bg  = _colors.white;
-            global:player = 1;
-
-            var UI* ui;
-            loop do
-                var int id, idx;
-                (id,idx) = await global:ok_game;
-
-                // close if win?
-                if games[id].win? then
-                    ui = new[9] UITexture with
+            // final result
+            var int res = do  // parent for Games
+                var s8[9] state;
+                loop i, 9 do
+                    spawn[9] Game with
+                        this.id  = i;
                         this.ren = ren;
-                        this.clr_bg? = 1;
-                        this.clr_bg  = _colors.gray;
-                        if global:player == 1 then
-                            this.tex = tex_xx;
-                        else
-                            this.tex = tex_oo;
-                        end
+                        this.grid.clr_ui_bg = _colors.yellow;
+                        grid.uis[i] = &this.grid;
+                            // TODO: finally
+                            // grid >> this
+                        state[i] = 0;
                     end;
-                    emit grid.go_ui => (id,ui);
-
-                    state[id] = global:player;
-                    if _Game_check(state, id, global:player) then
-                        break;
-                    end
                 end
 
-                // any if going to closed
-                if games[idx].win? then
-                    loop i, 9 do
-                        games[i].grid.clr_ui_bg = _colors.yellow;
-                        emit games[i].pse? => 0;
-                    end
-                // otherwise, pause all but "idx"
-                else
-                    loop i, 9 do
-                        if idx == i then
-                            games[i].grid.clr_ui_bg = _colors.yellow;
-                            emit games[i].pse? => 0;
+                emit main.go_redim => &r;
+
+                ui_x.clr_bg  = _colors.yellow;
+                ui_o.clr_bg  = _colors.white;
+                global:player = 1;
+
+                var UI* ui;
+                loop do                 // TODO: every
+                    var void* game_;
+                    var int idx;
+                    (game_,idx) = await global:ok_game;
+                    var Game* game = (Game*) game_;
+                    _assert(game != null);
+
+                    // close myself if win?
+                    if game:win? != 0 then
+                        if game:win? > 0 then
+                            ui = new[9] UITexture with
+                                this.ren = ren;
+                                this.clr_bg? = 1;
+                                this.clr_bg  = _colors.gray;
+                                if global:player == 1 then
+                                    this.tex = tex_xx;
+                                else
+                                    this.tex = tex_oo;
+                                end
+                            end;
+                            emit grid.go_ui => (game:id,ui);     // X or 0
                         else
-                            games[i].grid.clr_ui_bg = _colors.white;
-                            emit games[i].pse? => 1;
+                            emit grid.go_ui => (game:id,null);   // empty
+                        end
+
+                        state[game:id] = game:win?;
+                        free game;
+                            // no references to it (removed form grid)
+
+                        var int res_ =
+                            _Game_check(state, game:id, global:player);
+                        if res_ != 0 then
+                            return res_;
                         end
                     end
+
+                    // open all cells if going to a closed one
+                    if state[idx] != 0 then
+                        loop oth, Game* do
+                            oth:grid.clr_ui_bg = _colors.yellow;
+                            emit oth:pse? => 0;
+                        end
+                    // otherwise, pause all but "idx" cell
+                    else
+                        loop oth, Game* do
+                            if oth:id == idx then
+                                oth:grid.clr_ui_bg = _colors.yellow;
+                                emit oth:pse? => 0;
+                            else
+                                oth:grid.clr_ui_bg = _colors.white;
+                                emit oth:pse? => 1;
+                            end
+                        end
+                    end
+
+                    uis_bar[global:player-1]:clr_bg = _colors.white;
+                    global:player = 3 - global:player;
+                    uis_bar[global:player-1]:clr_bg = _colors.yellow;
                 end
+            end; // kills all remaining games
 
-                uis_bar[global:player-1]:clr_bg = _colors.white;
-                global:player = 3 - global:player;
-                uis_bar[global:player-1]:clr_bg = _colors.yellow;
+            if res > 0 then
+                var UITexture final with
+                    this.ren = ren;
+                    this.clr_bg? = 1;
+                    this.clr_bg  = _colors.gray;
+                    if res == 1 then
+                        this.tex = tex_xxx;
+                    else   // 2
+                        this.tex = tex_ooo;
+                    end
+                end;
+                emit final.go_redim => &r;
+                await main.ok_clicked;
+            else
+                await main.ok_clicked;
             end
-
-            // pause all remaining games
-            loop i, 9 do
-                games[i].grid.clr_ui_bg = _colors.white;
-                emit games[i].pse? => 1;
-            end
-
-            var UITexture final with
-                this.ren = ren;
-                this.clr_bg? = 1;
-                this.clr_bg  = _colors.gray;
-                if global:player == 1 then
-                    this.tex = tex_xxx;
-                else
-                    this.tex = tex_ooo;
-                end
-            end;
-            emit final.go_redim => &r;
-
-            await main.ok_clicked;
         end
     end
 with
