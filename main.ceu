@@ -181,10 +181,17 @@ end;
 
 par/or do
     await SDL_QUIT;
+/***
+with
+    @include(simul.ceu)
+***/
 with
     loop do
         par/or do
             await ui_new.ok_clicked;
+/***
+            await FOREVER;
+***/
         with
             var _SDL_Rect r;
                 r.w = win_w;

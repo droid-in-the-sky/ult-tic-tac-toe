@@ -5,7 +5,7 @@
 # ms_print massif.out.19214 |less
 
 all:
-	ceu main.ceu
+	ceu --m4 main.ceu
 	gcc -Os main.c $(CFLAGS) -lSDL2 -lSDL2_image \
 		-o ult-tic-tac-toe.exe
 

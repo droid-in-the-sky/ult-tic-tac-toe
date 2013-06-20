@@ -32,4 +32,5 @@ endif
 
 include $(BUILD_SHARED_LIBRARY)
 
-$(shell (cd $(LOCAL_PATH) ; ceu main.ceu))
+$(shell (cd $(LOCAL_PATH) ; ceu --m4 main.ceu))
+
