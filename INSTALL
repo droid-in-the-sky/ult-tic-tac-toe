@@ -21,6 +21,7 @@
     (link jni/src with project directory)
 # vi src/org/libsdl/app/SDLActivity.java
     (uncomment modules to use)
+    (handle onKey(BACK))
 # vi src/org/droid_in_the_sky/ult_tic_tac_toe/UltTicTacToe.java
     (should point to SDLActivity)
 

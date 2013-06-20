@@ -113,7 +113,7 @@ var UIGrid bar with
     end
     this.ren      = ren;
     this.clr_bg?  = 1;
-    this.clr_bg   = _colors.brown;
+    this.clr_bg   = _colors.black;
     this.spc_x    = 10;
     this.spc_y    = 10;
     this.lay      = _lay_bar;
