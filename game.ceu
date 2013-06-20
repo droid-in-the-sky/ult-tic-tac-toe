@@ -1,0 +1,249 @@
+import sdl.ceu;
+import colors.ceu;
+import ui.ceu;
+import uigrid.ceu;
+
+input void SDL_REDRAW;
+input void SDL_QUIT;
+
+interface Global with
+    event (int,int) ok_game;
+    var int player;
+end
+event (int,int) ok_game;
+var int player = 1;
+
+native pure _Game_check();
+native do
+    int Game_lay[9] = {
+        0, 1, 2,
+        3, 4, 5,
+        6, 7, 8
+    };
+
+    // check win
+    int Game_check (s8* state, int idx, int plr) {
+        int x = idx / 3;
+        int y = idx % 3;
+        int i;
+
+        for (i=0; i<3; i++) {    // check lin
+            int p = x*3 + i;
+            if (state[p] != plr)
+                break;
+            else if (i == 2)
+                return 1;
+        }
+
+        for (i=0; i<3; i++) {    // check col
+            int p = i*3 + y;
+            if (state[p] != plr)
+                break;
+            else if (i == 2)
+                return 1;
+        }
+
+        if (x == y) {            // check diag
+            for (i=0; i<3; i++) {
+                int p = i*3 + i;
+                if (state[p] != plr)
+                    break;
+                else if (i == 2)
+                    return 1;
+            }
+        }
+
+        for (i=0; i<3; i++) {    // check anti-diag
+            int p = i*3 + 2-i;
+            if (state[p] != plr)
+                break;
+            else if (i == 2)
+                return 1;
+        }
+
+        return 0;
+    }
+end
+
+class Game with
+    var int             id;
+    var int             win?;
+    var _SDL_Renderer*  ren;
+
+    var UIGrid grid with
+        this.clr_cell_fr? = 1;
+        this.clr_cell_fr  = _colors.black;
+        this.clr_ui_bg?   = 1;
+        this.clr_ui_bg    = _colors.white;
+        this.pad_x        = 2;
+        this.pad_y        = 2;
+        this.lay_lins     = 3;
+        this.lay_cols     = 3;
+        this.lay          = _Game_lay;
+        this.uis_n        = 9;
+    end;
+
+    event int pse?;
+do
+    var s8[9] state;
+        loop i, 9 do
+            state[i] = 0;
+        end
+
+    grid.ren = this.ren;
+    loop i, 9 do
+        grid.uis[i] = null;
+    end
+
+    // images x - o
+    var _SDL_Texture* tex_x;
+        finalize
+            tex_x = _IMG_LoadTexture(ren, "imgs/x.png");
+        with
+            _SDL_DestroyTexture(tex_x);
+        end
+    var _SDL_Texture* tex_o;
+        finalize
+            tex_o = _IMG_LoadTexture(ren, "imgs/o.png");
+        with
+            _SDL_DestroyTexture(tex_o);
+        end
+
+    var UITexture* ui;
+    pause/if this.pse? do
+        loop do
+            var int idx;
+            var UI* clk;
+            (idx,clk) = await this.grid.ok_uiclicked;
+
+            if clk != null then
+                continue;
+            end
+
+            state[idx] = global:player;
+            this.win?  = _Game_check(state, idx, global:player);
+
+            ui = new[9] UITexture with
+                this.ren = ren;
+                if global:player == 1 then
+                    this.tex = tex_x;
+                else
+                    this.tex = tex_o;
+                end
+            end;
+            emit this.grid.go_ui => (idx, ui);
+            // TODO: ui is ptr (error!)
+            // but grid lives more than do-end of "new" (no error!)
+
+            // notify main application
+            emit global:ok_game => (this.id, idx);
+
+            if this.win? then
+                await FOREVER;
+            end
+        end
+    end
+end;
+
+var _SDL_Window* win;
+    finalize
+        win = _SDL_CreateWindow("The Ultimate Tic-Tac-Toe",
+                            500, 1300, 800, 480, _SDL_WINDOW_SHOWN);
+    with
+        _SDL_DestroyWindow(win);
+    end
+
+var int win_w;
+var int win_h;
+    _SDL_GetWindowSize(win, &win_w, &win_h);
+
+var _SDL_Renderer* ren;
+    finalize
+        ren = _SDL_CreateRenderer(win, -1, 0);
+    with
+        _SDL_DestroyRenderer(ren);
+    end
+
+// images X - O
+var _SDL_Texture* tex_X;
+    finalize
+        tex_X = _IMG_LoadTexture(ren, "imgs/X.png");
+    with
+        _SDL_DestroyTexture(tex_X);
+    end
+var _SDL_Texture* tex_O;
+    finalize
+        tex_O = _IMG_LoadTexture(ren, "imgs/O.png");
+    with
+        _SDL_DestroyTexture(tex_O);
+    end
+
+par/or do
+    await SDL_QUIT;
+with
+    var Game game with
+        this.id  = 0;
+        this.ren = ren;
+    end;
+
+    var _SDL_Rect r;
+        r.w = win_w;
+        r.h = win_h;
+        r.x = 0;
+        r.y = 0;
+    emit game.grid.go_redim => &r;
+
+    var UI* ui;
+
+    loop do
+        var int id, idx;
+        (id,idx) = await global:ok_game;
+_printf("id=%d win?=%d idx=%d\n", id, game.win?, idx);
+
+        if game.win? then
+            ui = new[1] UITexture with
+                this.ren = ren;
+                this.clr_bg? = 1;
+                this.clr_bg.r = 0x77;
+                this.clr_bg.g = 0x77;
+                this.clr_bg.b = 0x77;
+                this.clr_bg.a = 0x77;       // TODO
+                if global:player == 1 then
+                    this.tex = tex_X;
+                else
+                    this.tex = tex_O;
+                end
+            end;
+            emit ui:go_redim => &r;
+        end
+
+        global:player = 3 - global:player;
+    end
+
+/**
+    var int ok;
+    await 1s;
+    emit game.go => (0, 0, &ok);
+    _printf("ok=%d\n", ok);
+    await 1s;
+    emit game.go => (1, 1, &ok);
+    _printf("ok=%d\n", ok);
+
+    loop do
+        var int idx;
+        var UI* ui;
+        (idx,ui) = await game.grid.ok_uiclicked;
+        if ui != null then
+            emit game.go => (idx, 1, &ok);
+        end
+        _printf("click %d %p\n", idx, ui);
+    end
+**/
+
+with
+    every SDL_REDRAW do
+        _SDL_RenderPresent(ren);
+    end
+end
+
+return 0;

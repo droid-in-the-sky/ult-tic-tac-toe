@@ -1,0 +1,263 @@
+import sdl.ceu;
+import colors.ceu;
+import uigrid.ceu;
+
+interface Global with
+    event (int,int) ok_game;   // id,idx
+    var int player;
+end
+event (int,int) ok_game;
+var int player;
+
+import game.ceu;
+
+input void SDL_REDRAW;
+input void SDL_QUIT;
+
+var _SDL_Window* win;
+    finalize
+        win = _SDL_CreateWindow("The Ultimate Tic-Tac-Toe",
+                            500, 1300, 800, 480, _SDL_WINDOW_SHOWN);
+    with
+        _SDL_DestroyWindow(win);
+    end
+
+var int win_w;
+var int win_h;
+    _SDL_GetWindowSize(win, &win_w, &win_h);
+
+var _SDL_Renderer* ren;
+    finalize
+        ren = _SDL_CreateRenderer(win, -1, 0);
+    with
+        _SDL_DestroyRenderer(ren);
+    end
+
+var _SDL_Texture* tex_x;
+    finalize
+        tex_x = _IMG_LoadTexture(ren, "imgs/x.png");
+    with
+        _SDL_DestroyTexture(tex_x);
+    end
+    _assert(tex_x != null);
+
+var _SDL_Texture* tex_o;
+    finalize
+        tex_o = _IMG_LoadTexture(ren, "imgs/O.png");
+    with
+        _SDL_DestroyTexture(tex_o);
+    end
+    _assert(tex_o != null);
+
+var _SDL_Texture* tex_X;
+    finalize
+        tex_X = _IMG_LoadTexture(ren, "imgs/X.png");
+    with
+        _SDL_DestroyTexture(tex_X);
+    end
+    _assert(tex_X != null);
+
+var _SDL_Texture* tex_O;
+    finalize
+        tex_O = _IMG_LoadTexture(ren, "imgs/O.png");
+    with
+        _SDL_DestroyTexture(tex_O);
+    end
+    _assert(tex_O != null);
+
+var _SDL_Texture* tex_new;
+    finalize
+        tex_new = _IMG_LoadTexture(ren, "imgs/new.png");
+    with
+        _SDL_DestroyTexture(tex_new);
+    end
+    _assert(tex_new != null);
+
+var UIGrid grid with
+    native do
+        int lay_games[9] = {
+            0, 1, 2,
+            3, 4, 5,
+            6, 7, 8
+        };
+    end
+    this.ren      = ren;
+    this.clr_bg?  = 1;
+    this.clr_bg   = _colors.gray;
+    this.spc_x    = 10;
+    this.spc_y    = 10;
+    this.lay      = _lay_games;
+    this.lay_lins = 3;
+    this.lay_cols = 3;
+    this.uis_n    = 9;
+end;
+
+var UIGrid bar with
+    native do
+        int lay_bar[5] = {
+            0, 1, 2, 3, 4
+        };
+    end
+    this.ren      = ren;
+    this.clr_bg?  = 1;
+    this.clr_bg   = _colors.brown;
+    this.spc_x    = 10;
+    this.spc_y    = 10;
+    this.lay      = _lay_bar;
+    this.lay_lins = 5;
+    this.lay_cols = 1;
+    this.uis_n    = 5;
+
+    var UITexture ui_x with
+        this.ren = ren;
+        this.tex = tex_x;
+        this.clr_bg? = 1;
+    end;
+
+    var UITexture ui_o with
+        this.ren = ren;
+        this.tex = tex_o;
+        this.clr_bg? = 1;
+    end;
+
+    var UITexture ui_new with
+        this.ren = ren;
+        this.tex = tex_new;
+    end;
+
+    var UI*[5] uis_bar;
+        uis_bar[0] = &ui_x;
+        uis_bar[1] = &ui_o;
+        uis_bar[2] = null;
+        uis_bar[3] = null;
+        uis_bar[4] = &ui_new;
+    this.uis = uis_bar;
+end;
+
+var UIGrid main with
+    native do
+        int lay_main[8] = {
+            0, 0, 0, 0, 0, 0, 0, 1
+        };
+    end
+    this.ren      = ren;
+    this.lay      = _lay_main;
+    this.lay_lins = 1;
+    this.lay_cols = 8;
+    this.uis_n    = 2;
+
+    var UI*[2] uis_main;
+        uis_main[0] = &grid;
+        uis_main[1] = &bar;
+        this.uis    = uis_main;
+end;
+
+par/or do
+    await SDL_QUIT;
+with
+    loop do
+        par/or do
+            await ui_new.ok_clicked;
+        with
+            var s8[9] state;
+                loop i, 9 do
+                    state[i] = 0;
+                end
+
+            var int gi = 0;
+            var Game[9] games with
+                this.id  = gi;
+                this.ren = ren;
+                this.grid.clr_ui_bg = _colors.yellow;
+                grid.uis[gi] = &this.grid;
+                gi = gi + 1;
+            end;
+
+            var _SDL_Rect r;
+                r.w = win_w;
+                r.h = win_h;
+                r.x = 0;
+                r.y = 0;
+            emit main.go_redim => &r;
+
+            ui_x.clr_bg  = _colors.yellow;
+            ui_o.clr_bg  = _colors.white;
+            global:player = 1;
+
+            var UI* ui;
+            loop do
+                var int id, idx;
+                (id,idx) = await global:ok_game;
+
+                // close if win?
+                if games[id].win? then
+                    ui = new[9] UITexture with
+                        this.ren = ren;
+                        this.clr_bg? = 1;
+                        this.clr_bg  = _colors.gray;
+                        if global:player == 1 then
+                            this.tex = tex_X;
+                        else
+                            this.tex = tex_O;
+                        end
+                    end;
+                    emit grid.go_ui => (id,ui);
+
+                    state[id] = global:player;
+                    if _Game_check(state, id, global:player) then
+                        break;
+                    end
+                end
+
+                // any if going to closed
+                if games[idx].win? then
+                    loop i, 9 do
+                        games[i].grid.clr_ui_bg = _colors.yellow;
+                        emit games[i].pse? => 0;
+                    end
+                // otherwise, pause all but "idx"
+                else
+                    loop i, 9 do
+                        if idx == i then
+                            games[i].grid.clr_ui_bg = _colors.yellow;
+                            emit games[i].pse? => 0;
+                        else
+                            games[i].grid.clr_ui_bg = _colors.white;
+                            emit games[i].pse? => 1;
+                        end
+                    end
+                end
+
+                uis_bar[global:player-1]:clr_bg = _colors.white;
+                global:player = 3 - global:player;
+                uis_bar[global:player-1]:clr_bg = _colors.yellow;
+            end
+
+            // pause all remaining games
+            loop i, 9 do
+                games[i].grid.clr_ui_bg = _colors.white;
+                emit games[i].pse? => 1;
+            end
+
+            var UITexture final with
+                this.ren = ren;
+                this.clr_bg? = 1;
+                this.clr_bg  = _colors.gray;
+                if global:player == 1 then
+                    this.tex = tex_X;
+                else
+                    this.tex = tex_O;
+                end
+            end;
+            emit final.go_redim => &r;
+
+            await main.ok_clicked;
+        end
+    end
+with
+    every SDL_REDRAW do
+        _SDL_RenderPresent(ren);
+    end
+end
+
+return 0;

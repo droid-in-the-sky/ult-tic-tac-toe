@@ -1,0 +1,11 @@
+.*.swp
+.*.swo
+_ceu_*
+*.ceu_m4
+android-project/assets/
+android-project/bin/
+android-project/files/
+android-project/gen/
+android-project/jni/
+android-project/libs/
+android-project/obj/
