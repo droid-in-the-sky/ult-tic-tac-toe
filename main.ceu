@@ -77,6 +77,20 @@ var _SDL_Texture* tex_ooo;
     end
     _assert(tex_ooo != null);
 
+var _SDL_Texture* tex_vv;
+    finalize
+        tex_vv = _IMG_LoadTexture(ren, "imgs/vv.png");
+    with
+        _SDL_DestroyTexture(tex_vv);
+    end
+    _assert(tex_vv != null);
+var _SDL_Texture* tex_vvv;
+    finalize
+        tex_vvv = _IMG_LoadTexture(ren, "imgs/vvv.png");
+    with
+        _SDL_DestroyTexture(tex_vvv);
+    end
+    _assert(tex_vvv != null);
 
 var _SDL_Texture* tex_new;
     finalize
@@ -209,21 +223,19 @@ with
 
                     // close myself if win?
                     if game:win? != 0 then
-                        if game:win? > 0 then
-                            ui = new[9] UITexture with
-                                this.ren = ren;
-                                this.clr_bg? = 1;
-                                this.clr_bg  = _colors.gray;
-                                if global:player == 1 then
-                                    this.tex = tex_xx;
-                                else
-                                    this.tex = tex_oo;
-                                end
-                            end;
-                            emit grid.go_ui => (game:id,ui);     // X or 0
-                        else
-                            emit grid.go_ui => (game:id,null);   // empty
-                        end
+                        ui = new[9] UITexture with
+                            this.ren = ren;
+                            this.clr_bg? = 1;
+                            this.clr_bg  = _colors.gray;
+                            if game:win? == 1 then
+                                this.tex = tex_xx;
+                            else/if game:win? == 2 then
+                                this.tex = tex_oo;
+                            else
+                                this.tex = tex_vv;
+                            end
+                        end;
+                        emit grid.go_ui => (game:id,ui);     // X or 0 or #
 
                         state[game:id] = game:win?;
                         free game;
@@ -261,22 +273,20 @@ with
                 end
             end; // kills all remaining games
 
-            if res > 0 then
-                var UITexture final with
-                    this.ren = ren;
-                    this.clr_bg? = 1;
-                    this.clr_bg  = _colors.gray;
-                    if res == 1 then
-                        this.tex = tex_xxx;
-                    else   // 2
-                        this.tex = tex_ooo;
-                    end
-                end;
-                emit final.go_redim => &r;
-                await main.ok_clicked;
-            else
-                await main.ok_clicked;
-            end
+            var UITexture final with
+                this.ren = ren;
+                this.clr_bg? = 1;
+                this.clr_bg  = _colors.gray;
+                if res == 1 then
+                    this.tex = tex_xxx;
+                else/if res == 2 then
+                    this.tex = tex_ooo;
+                else
+                    this.tex = tex_vvv;
+                end
+            end;
+            emit final.go_redim => &r;
+            await main.ok_clicked;
         end
     end
 with
