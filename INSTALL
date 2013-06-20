@@ -15,19 +15,23 @@
     (redefine "package")
 # vi local.properties
     (redefine "sdk.dir")
+# vi res/values/strings.xml
+    (app name)
+# ln -s ../.. jni/src
+    (link jni/src with project directory)
+# vi src/org/libsdl/app/SDLActivity.java
+    (uncomment modules to use)
+# vi src/org/droid_in_the_sky/ult_tic_tac_toe/UltTicTacToe.java
+    (should point to SDLActivity)
 
----------
- C & Céu
----------
+-----------
+ ASSETS
+-----------
 
-# cd android-project/jni/src/
-# ln -s ../../../main.c
-# ln -s ../../../mtg_life.ceu
-# ln -s ../../../sdl.ceu
-# ln -s ../../../simul.ceu
-# ln -s ../../../player.ceu
-# ln -s ../../../redim_players.ceu
-# ln -s ../../../counter.ceu
+# cd android-project/
+# mkdir assets/
+# cd assets
+# ln -s ../../imgs
 
 -----------
  LIBRARIES
@@ -41,24 +45,12 @@
 
 # ln -s <SDL_image>/
     (link to "SDL_image" source tree)
-# ln -s <png>/
-    (link to "png" source tree)
-# ln -s <jpeg>/
-    (link to "jpeg" source tree)
 
 # ln -s <SDL_mixer>/
     (link to "SDL_mixer" source tree)
-# ln -s <mikmod>
-    (link to "mikmod" source tree)
-# ln -s <tremor>
-    (link to "tremor" source tree)
 
 # ln -s <SDL_ttf>/
     (link to "SDL_ttf" source tree)
-# ln -s <freetype>/
-    (link to "freetype" source tree)
-
-mikmod as em SDLActivity
 
 -------
  BUILD

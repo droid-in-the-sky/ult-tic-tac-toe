@@ -43,7 +43,7 @@ var _SDL_Texture* tex_x;
 
 var _SDL_Texture* tex_o;
     finalize
-        tex_o = _IMG_LoadTexture(ren, "imgs/O.png");
+        tex_o = _IMG_LoadTexture(ren, "imgs/oo.png");
     with
         _SDL_DestroyTexture(tex_o);
     end
@@ -51,7 +51,7 @@ var _SDL_Texture* tex_o;
 
 var _SDL_Texture* tex_X;
     finalize
-        tex_X = _IMG_LoadTexture(ren, "imgs/X.png");
+        tex_X = _IMG_LoadTexture(ren, "imgs/xx.png");
     with
         _SDL_DestroyTexture(tex_X);
     end
@@ -59,7 +59,7 @@ var _SDL_Texture* tex_X;
 
 var _SDL_Texture* tex_O;
     finalize
-        tex_O = _IMG_LoadTexture(ren, "imgs/O.png");
+        tex_O = _IMG_LoadTexture(ren, "imgs/oo.png");
     with
         _SDL_DestroyTexture(tex_O);
     end
