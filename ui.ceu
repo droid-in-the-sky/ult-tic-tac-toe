@@ -51,6 +51,7 @@ interface UI with
 end
 
 input void SDL_REDRAW;
+input _SDL_MouseButtonEvent* SDL_MOUSEBUTTONDOWN;
 
 class UITexture with
     interface UI;

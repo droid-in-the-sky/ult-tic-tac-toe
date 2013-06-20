@@ -1,0 +1,75 @@
+===============================================================================
+ LINUX
+===============================================================================
+
+# make
+# ./ult-tic-tac-toe.exe
+
+
+===============================================================================
+ ANDROID
+===============================================================================
+
+# cd android-project/
+# vi AndroidManifest.xml
+    (redefine "package")
+# vi local.properties
+    (redefine "sdk.dir")
+
+---------
+ C & Céu
+---------
+
+# cd android-project/jni/src/
+# ln -s ../../../main.c
+# ln -s ../../../mtg_life.ceu
+# ln -s ../../../sdl.ceu
+# ln -s ../../../simul.ceu
+# ln -s ../../../player.ceu
+# ln -s ../../../redim_players.ceu
+# ln -s ../../../counter.ceu
+
+-----------
+ LIBRARIES
+-----------
+
+# cd android-project/jni/
+    (android-project/jni/)
+
+# ln -s <SDL>/
+    (link to "SDL" source tree)
+
+# ln -s <SDL_image>/
+    (link to "SDL_image" source tree)
+# ln -s <png>/
+    (link to "png" source tree)
+# ln -s <jpeg>/
+    (link to "jpeg" source tree)
+
+# ln -s <SDL_mixer>/
+    (link to "SDL_mixer" source tree)
+# ln -s <mikmod>
+    (link to "mikmod" source tree)
+# ln -s <tremor>
+    (link to "tremor" source tree)
+
+# ln -s <SDL_ttf>/
+    (link to "SDL_ttf" source tree)
+# ln -s <freetype>/
+    (link to "freetype" source tree)
+
+mikmod as em SDLActivity
+
+-------
+ BUILD
+-------
+
+# cd android-project/
+# ndk-build
+# ant debug
+# ant debug install
+
+# android avd
+# adb logcat
+# adb install -r bin/CeuApp-debug.apk
+

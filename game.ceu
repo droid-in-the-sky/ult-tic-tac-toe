@@ -198,7 +198,7 @@ with
     loop do
         var int id, idx;
         (id,idx) = await global:ok_game;
-_printf("id=%d win?=%d idx=%d\n", id, game.win?, idx);
+//_printf("id=%d win?=%d idx=%d\n", id, game.win?, idx);
 
         if game.win? then
             ui = new[1] UITexture with
@@ -219,27 +219,6 @@ _printf("id=%d win?=%d idx=%d\n", id, game.win?, idx);
 
         global:player = 3 - global:player;
     end
-
-/**
-    var int ok;
-    await 1s;
-    emit game.go => (0, 0, &ok);
-    _printf("ok=%d\n", ok);
-    await 1s;
-    emit game.go => (1, 1, &ok);
-    _printf("ok=%d\n", ok);
-
-    loop do
-        var int idx;
-        var UI* ui;
-        (idx,ui) = await game.grid.ok_uiclicked;
-        if ui != null then
-            emit game.go => (idx, 1, &ok);
-        end
-        _printf("click %d %p\n", idx, ui);
-    end
-**/
-
 with
     every SDL_REDRAW do
         _SDL_RenderPresent(ren);
