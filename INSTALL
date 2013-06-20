@@ -13,8 +13,12 @@
 # cd android-project/
 # vi AndroidManifest.xml
     (redefine "package")
+# vi build.xml
+    (redefine "project name")
 # vi local.properties
     (redefine "sdk.dir")
+# vi ant.properties
+    (define keys)
 # vi res/values/strings.xml
     (app name)
 # ln -s ../.. jni/src
