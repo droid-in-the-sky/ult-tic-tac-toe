@@ -5,13 +5,13 @@
 # ms_print massif.out.19214 |less
 
 all:
-	ceu --m4 main.ceu
-	gcc -Os main.c $(CFLAGS) -lSDL2 -lSDL2_image \
+	ceu main.ceu
+	gcc -Os main.c $(CFLAGS) -lSDL2 -lSDL2_image -lSDL2_ttf \
 		-o ult-tic-tac-toe.exe
 
 one:
-	ceu game.ceu
-	gcc -Os main.c $(CFLAGS) -lSDL2 -lSDL2_image \
+	ceu --cpp-args "-D __ULT_GAME_CEU" game.ceu
+	gcc -Os main.c $(CFLAGS) -lSDL2 -lSDL2_image -lSDL2_ttf \
 		-o ult-tic-tac-toe.exe
 
 clean:

@@ -1,10 +1,16 @@
-import sdl.ceu;
-import colors.ceu;
-import ui.ceu;
-import uigrid.ceu;
+#ifndef _ULT_GAME_CEU
+#define _ULT_GAME_CEU
+
+#include "sdl.ceu"
+#include "colors.ceu"
+#include "ui.ceu"
+#include "ui-texture.ceu"
+#include "ui-grid.ceu"
 
 input void SDL_REDRAW;
 input void SDL_QUIT;
+
+#ifdef __ULT_GAME_CEU
 
 interface Global with
     event (void*,int) ok_game;
@@ -12,6 +18,8 @@ interface Global with
 end
 event (void*,int) ok_game;
 var int player = 1;
+
+#endif
 
 native pure _Game_check();
 native do
@@ -76,19 +84,7 @@ class Game with
     var int             id   = -1;
     var int             win? = 0;
     var _SDL_Renderer*  ren  = null;
-
-    var UIGrid grid with
-        this.clr_cell_fr? = 1;
-        this.clr_cell_fr  = _colors.black;
-        this.clr_ui_bg?   = 1;
-        this.clr_ui_bg    = _colors.white;
-        this.pad_x        = 2;
-        this.pad_y        = 2;
-        this.lay_lins     = 3;
-        this.lay_cols     = 3;
-        this.lay          = _Game_lay;
-        this.uis_n        = 9;
-    end;
+    var UIGrid*         grid = null;
 
     event int pse?;
 do
@@ -101,9 +97,20 @@ do
             state[i] = 0;
         end
 
-    grid.ren = this.ren;
+    var UIGrid g with
+        this.ren         = ren;
+        this.clr_cell_fr = &_colors.black;
+        this.clr_ui_bg   = &_colors.white;
+        this.pad_x       = 2;
+        this.pad_y       = 2;
+        this.lay_lins    = 3;
+        this.lay_cols    = 3;
+        this.lay         = _Game_lay;
+        this.uis_n       = 9;
+    end;
+    this.grid = &g;
     loop i, 9 do
-        grid.uis[i] = null;
+        g.uis[i] = null;
     end
 
     // images x - o
@@ -125,7 +132,7 @@ do
         loop do
             var int idx;
             var UI* clk;
-            (idx,clk) = await this.grid.ok_uiclicked;
+            (idx,clk) = await g.ok_uiclicked;
 
             if clk != null then
                 continue;
@@ -142,7 +149,10 @@ do
                     this.tex = tex_o;
                 end
             end;
-            emit this.grid.go_ui => (idx, ui);
+            g._go_ui(idx, ui)
+                finalize with
+                    //g._go_ui(idx, null);
+                end;
             // TODO: ui is ptr (error!)
             // but grid lives more than do-end of "new" (no error!)
 
@@ -155,6 +165,8 @@ do
         end
     end
 end;
+
+#ifdef __ULT_GAME_CEU
 
 var _SDL_Window* win;
     finalize
@@ -203,7 +215,7 @@ with
             r.h = win_h;
             r.x = 0;
             r.y = 0;
-        emit game.grid.go_redim => &r;
+        game.grid:_go_rect(&r);
 
         loop do
             var void* oth_;
@@ -222,17 +234,16 @@ with
 
         var UITexture ui with
             this.ren = ren;
-            this.clr_bg? = 1;
-            this.clr_bg  = _colors.gray;
+            this.clr_bg = &_colors.gray;
             if global:player == 1 then
                 this.tex = tex_xx;
             else
                 this.tex = tex_oo;
             end
         end;
-        emit ui.go_redim => &r;
+        ui._go_rect(&r);
 
-        await game.grid.ok_clicked;
+        await game.grid:ok_clicked;
     end
 with
     every SDL_REDRAW do
@@ -241,3 +252,6 @@ with
 end
 
 return 0;
+
+#endif
+#endif
