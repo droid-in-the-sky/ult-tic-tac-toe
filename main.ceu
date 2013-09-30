@@ -195,7 +195,7 @@ with
                 r.w = win_w;
                 r.h = win_h;
                 r.x = win_w/2;
-                r.y = win_w/2;
+                r.y = win_h/2;
 
             // final result
             var int res = do  // parent for Games
