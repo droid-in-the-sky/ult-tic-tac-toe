@@ -109,6 +109,7 @@ var UIGrid grid with
         };
     end
     this.ren      = ren;
+    this.bg_redim? = 1;
     this.clr_bg   = &_colors.gray;
     this.spc_x    = 10;
     this.spc_y    = 10;
@@ -125,6 +126,7 @@ var UIGrid bar with
         };
     end
     this.ren      = ren;
+    this.bg_redim? = 1;
     this.clr_bg   = &_colors.black;
     this.spc_x    = 10;
     this.spc_y    = 10;
@@ -192,8 +194,8 @@ with
             var _SDL_Rect r;
                 r.w = win_w;
                 r.h = win_h;
-                r.x = 0;
-                r.y = 0;
+                r.x = win_w/2;
+                r.y = win_w/2;
 
             // final result
             var int res = do  // parent for Games
@@ -212,10 +214,10 @@ with
                         // grid >> this
                 end
 
-                main._go_rect(&r);
+                main._go(&r);
 
-                ui_x.clr_bg = &_colors.yellow;
-                ui_o.clr_bg = &_colors.white;
+                ui_x.bg_clr = &_colors.yellow;
+                ui_o.bg_clr = &_colors.white;
                 global:player = 1;
 
                 var UI* ui;
@@ -230,7 +232,7 @@ with
                     if game:win? != 0 then
                         ui = new[9] UITexture with
                             this.ren = ren;
-                            this.clr_bg = &_colors.gray;
+                            this.bg_clr = &_colors.gray;
                             if game:win? == 1 then
                                 this.tex = tex_xx;
                             else/if game:win? == 2 then
@@ -274,15 +276,15 @@ with
                         end
                     end
 
-                    uis_bar[global:player-1]:clr_bg = &_colors.white;
+                    uis_bar[global:player-1]:bg_clr = &_colors.white;
                     global:player = 3 - global:player;
-                    uis_bar[global:player-1]:clr_bg = &_colors.yellow;
+                    uis_bar[global:player-1]:bg_clr = &_colors.yellow;
                 end
             end; // kills all remaining games
 
             var UITexture final with
                 this.ren = ren;
-                this.clr_bg = &_colors.gray;
+                this.bg_clr = &_colors.gray;
                 if res == 1 then
                     this.tex = tex_xxx;
                 else/if res == 2 then
@@ -291,7 +293,7 @@ with
                     this.tex = tex_vvv;
                 end
             end;
-            final._go_rect(&r);
+            final._go(&r);
             await main.ok_clicked;
         end
     end

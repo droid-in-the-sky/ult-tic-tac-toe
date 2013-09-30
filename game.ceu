@@ -99,6 +99,7 @@ do
 
     var UIGrid g with
         this.ren         = ren;
+        this.bg_redim?   = 1;
         this.clr_cell_fr = &_colors.black;
         this.clr_ui_bg   = &_colors.white;
         this.pad_x       = 2;
@@ -213,9 +214,9 @@ with
         var _SDL_Rect r;
             r.w = win_w;
             r.h = win_h;
-            r.x = 0;
-            r.y = 0;
-        game.grid:_go_rect(&r);
+            r.x = win_w/2;
+            r.y = win_h/2;
+        game.grid:_go(&r);
 
         loop do
             var void* oth_;
@@ -234,14 +235,14 @@ with
 
         var UITexture ui with
             this.ren = ren;
-            this.clr_bg = &_colors.gray;
+            this.bg_clr = &_colors.gray;
             if global:player == 1 then
                 this.tex = tex_xx;
             else
                 this.tex = tex_oo;
             end
         end;
-        ui._go_rect(&r);
+        ui._go(&r);
 
         await game.grid:ok_clicked;
     end
