@@ -214,7 +214,7 @@ with
                         // grid >> this
                 end
 
-                main._go(&r);
+                main.go(&r);
 
                 ui_x.bg_clr = &_colors.yellow;
                 ui_o.bg_clr = &_colors.white;
@@ -241,9 +241,9 @@ with
                                 this.tex = tex_vv;
                             end
                         end;
-                        grid._go_ui(game:id,ui)      // X or 0 or #
+                        grid.go_ui(game:id,ui)      // X or 0 or #
                             finalize with
-                                //grid._go_ui(game:id,null);
+                                //grid.go_ui(game:id,null);
                             end;
 
                         state[game:id] = game:win?;
@@ -253,7 +253,7 @@ with
                         var int res_ =
                             _Game_check(state, game:id, global:player);
                         if res_ != 0 then
-                            return res_;
+                            escape res_;
                         end
                     end
 
@@ -293,7 +293,7 @@ with
                     this.tex = tex_vvv;
                 end
             end;
-            final._go(&r);
+            final.go(&r);
             await main.ok_clicked;
         end
     end
@@ -303,4 +303,4 @@ with
     end
 end
 
-return 0;
+escape 0;

@@ -150,9 +150,9 @@ do
                     this.tex = tex_o;
                 end
             end;
-            g._go_ui(idx, ui)
+            g.go_ui(idx, ui)
                 finalize with
-                    //g._go_ui(idx, null);
+                    //g.go_ui(idx, null);
                 end;
             // TODO: ui is ptr (error!)
             // but grid lives more than do-end of "new" (no error!)
@@ -216,7 +216,7 @@ with
             r.h = win_h;
             r.x = win_w/2;
             r.y = win_h/2;
-        game.grid:_go(&r);
+        game.grid:go(&r);
 
         loop do
             var void* oth_;
@@ -242,7 +242,7 @@ with
                 this.tex = tex_oo;
             end
         end;
-        ui._go(&r);
+        ui.go(&r);
 
         await game.grid:ok_clicked;
     end
