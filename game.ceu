@@ -2,7 +2,7 @@
 #define _ULT_GAME_CEU
 
 #include "sdl.ceu"
-#include "colors.ceu"
+#include "sdl-colors.ceu"
 #include "ui.ceu"
 #include "ui-texture.ceu"
 #include "ui-grid.ceu"
@@ -21,7 +21,7 @@ var int player = 1;
 
 #endif
 
-native pure _Game_check();
+native @pure _Game_check();
 native do
     int Game_lay[9] = {
         0, 1, 2,
@@ -82,9 +82,9 @@ end
 
 class Game with
     var int             id   = -1;
-    var int             win? = 0;
-    var _SDL_Renderer*  ren  = null;
-    var UIGrid*         grid = null;
+    var int             win? = 0;       // not really a bool
+    var _SDL_Renderer[] ren  = null;
+    var UIGrid&         grid;
 
     event int pse?;
 do
@@ -93,26 +93,22 @@ do
     _assert(this.ren  != null);
 
     var s8[9] state;
-        loop i, 9 do
+        loop i in 9 do
             state[i] = 0;
         end
 
     var UIGrid g with
         this.ren         = ren;
-        this.bg_redim?   = 1;
-        this.clr_cell_fr = &_colors.black;
-        this.clr_ui_bg   = &_colors.white;
+        this.clr_cell_fr := &_colors.black;
+        this.clr_ui_bg   := &_colors.white;
         this.pad_x       = 2;
         this.pad_y       = 2;
         this.lay_lins    = 3;
         this.lay_cols    = 3;
-        this.lay         = _Game_lay;
+        this.lay         := _Game_lay;
         this.uis_n       = 9;
     end;
-    this.grid = &g;
-    loop i, 9 do
-        g.uis[i] = null;
-    end
+    this.grid = g;
 
     // images x - o
     var _SDL_Texture* tex_x;
@@ -128,34 +124,39 @@ do
             _SDL_DestroyTexture(tex_o);
         end
 
-    var UITexture* ui;
+    pool UITexture[9] uis;
     pause/if this.pse? do
         loop do
-            var int idx;
-            var UI* clk;
-            (idx,clk) = await g.ok_uiclicked;
-
-            if clk != null then
-                continue;
-            end
+            var int idx = await g.ok_uiclicked;
 
             state[idx] = global:player;
             this.win?  = _Game_check(state, idx, global:player);
 
-            ui = new[9] UITexture with
+            // clicked on an occupied square?
+            var bool occupied? = false;
+            loop (UIGridItem*) it in grid.uis do
+                if it:idx == idx then
+                    occupied? = true;
+                end
+            end
+            if occupied? then
+                continue;
+            end
+
+            var UITexture* ui = new UITexture in uis with
                 this.ren = ren;
                 if global:player == 1 then
-                    this.tex = tex_x;
+                    this.tex := tex_x;
                 else
-                    this.tex = tex_o;
+                    this.tex := tex_o;
                 end
             end;
-            g.go_ui(idx, ui)
-                finalize with
-                    //g.go_ui(idx, null);
+                spawn UIGridItem in grid.uis with
+                    this.idx = idx;
+                    this.ui  := ui;
+                            // TODO: watched!
                 end;
-            // TODO: ui is ptr (error!)
-            // but grid lives more than do-end of "new" (no error!)
+                call/rec grid.go(null);
 
             // notify main application
             emit global:ok_game => (&this, idx);
@@ -208,15 +209,17 @@ with
     loop do
         var Game game with
             this.id  = 0;
-            this.ren = ren;
+            this.ren := ren;
         end;
 
-        var _SDL_Rect r;
-            r.w = win_w;
-            r.h = win_h;
-            r.x = win_w/2;
-            r.y = win_h/2;
-        game.grid:go(&r);
+        do
+            var _SDL_Rect r;
+                r.x = 0;
+                r.y = 0;
+                r.w = win_w;
+                r.h = win_h;
+            call/rec game.grid.go_bg(&r);
+        end
 
         loop do
             var void* oth_;
@@ -234,17 +237,25 @@ with
         end
 
         var UITexture ui with
-            this.ren = ren;
+            this.ren := ren;
             this.bg_clr = &_colors.gray;
+            this.align_x = _UI_ALIGN_CENTER;
+            this.align_y = _UI_ALIGN_CENTER;
             if global:player == 1 then
-                this.tex = tex_xx;
+                this.tex := tex_xx;
             else
-                this.tex = tex_oo;
+                this.tex := tex_oo;
             end
         end;
-        ui.go(&r);
 
-        await game.grid:ok_clicked;
+        do
+            var _SDL_Rect r;
+                r.x = win_w/2;
+                r.y = win_h/2;
+            ui.go(&r);
+        end
+
+        await game.grid.ok_clicked;
     end
 with
     every SDL_REDRAW do
@@ -252,7 +263,7 @@ with
     end
 end
 
-return 0;
+escape 0;
 
 #endif
 #endif

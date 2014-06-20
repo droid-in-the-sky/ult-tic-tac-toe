@@ -1,5 +1,5 @@
 #include "sdl.ceu"
-#include "colors.ceu"
+#include "sdl-colors.ceu"
 #include "ui-grid.ceu"
 
 interface Global with
@@ -100,6 +100,19 @@ var _SDL_Texture* tex_new;
     end
     _assert(tex_new != null);
 
+var UIGrid main with
+    native do
+        int lay_main[8] = {
+            0, 0, 0, 0, 0, 0, 0, 1
+        };
+    end
+    this.ren      := ren;
+    this.lay      := _lay_main;
+    this.lay_lins = 1;
+    this.lay_cols = 8;
+    this.uis_n    = 2;
+end;
+
 var UIGrid grid with
     native do
         int lay_games[9] = {
@@ -108,16 +121,19 @@ var UIGrid grid with
             6, 7, 8
         };
     end
-    this.ren      = ren;
-    this.bg_redim? = 1;
+    this.ren      := ren;
     this.clr_bg   = &_colors.gray;
     this.spc_x    = 10;
     this.spc_y    = 10;
-    this.lay      = _lay_games;
+    this.lay      := _lay_games;
     this.lay_lins = 3;
     this.lay_cols = 3;
     this.uis_n    = 9;
 end;
+    spawn UIGridItem in main.uis with
+        this.idx = 0;
+        this.ui  = &grid;
+    end;
 
 var UIGrid bar with
     native do
@@ -125,57 +141,46 @@ var UIGrid bar with
             0, 1, 2, 3, 4
         };
     end
-    this.ren      = ren;
-    this.bg_redim? = 1;
+    this.ren      := ren;
     this.clr_bg   = &_colors.black;
     this.spc_x    = 10;
     this.spc_y    = 10;
-    this.lay      = _lay_bar;
+    this.lay      := _lay_bar;
     this.lay_lins = 5;
     this.lay_cols = 1;
     this.uis_n    = 5;
-
-    var UITexture ui_x with
-        this.ren = ren;
-        this.tex = tex_x;
-    end;
-
-    var UITexture ui_o with
-        this.ren = ren;
-        this.tex = tex_o;
-    end;
-
-    var UITexture ui_new with
-        this.ren = ren;
-        this.tex = tex_new;
-    end;
-
-    var UI*[5] uis_bar;
-        uis_bar[0] = &ui_x;
-        uis_bar[1] = &ui_o;
-        uis_bar[2] = null;
-        uis_bar[3] = null;
-        uis_bar[4] = &ui_new;
-    this.uis = uis_bar;
 end;
+    spawn UIGridItem in main.uis with
+        this.idx = 1;
+        this.ui  = &bar;
+    end;
 
-var UI*[2] uis_main;
-    uis_main[0] = &grid;
-    uis_main[1] = &bar;
-
-var UIGrid main with
-    native do
-        int lay_main[8] = {
-            0, 0, 0, 0, 0, 0, 0, 1
-        };
-    end
-    this.ren      = ren;
-    this.lay      = _lay_main;
-    this.lay_lins = 1;
-    this.lay_cols = 8;
-    this.uis_n    = 2;
-    this.uis      = uis_main;
+var UITexture ui_x with
+    this.ren := ren;
+    this.tex := tex_x;
 end;
+    spawn UIGridItem in bar.uis with
+        this.idx = 0;
+        this.ui  = &ui_x;
+    end;
+
+var UITexture ui_o with
+    this.ren := ren;
+    this.tex := tex_o;
+end;
+    spawn UIGridItem in bar.uis with
+        this.idx = 1;
+        this.ui  = &ui_o;
+    end;
+
+var UITexture ui_new with
+    this.ren := ren;
+    this.tex := tex_new;
+end;
+    spawn UIGridItem in bar.uis with
+        this.idx = 4;
+        this.ui  = &ui_new;
+    end;
 
 par/or do
     await SDL_QUIT;
@@ -192,35 +197,36 @@ with
 ***/
         with
             var _SDL_Rect r;
+                r.x = 0;
+                r.y = 0;
                 r.w = win_w;
                 r.h = win_h;
-                r.x = win_w/2;
-                r.y = win_h/2;
 
             // final result
             var int res = do  // parent for Games
                 var s8[9] state;
-                var int i = 0;
+                var int gi = 0;
                 var Game[9] games with
-                    this.id  = i;
-                    this.ren = ren;
-                    i = i + 1;
+                    this.id  = gi;
+                    this.ren := ren;
+                    gi = gi + 1;
                 end;
-                loop i, 9 do
+                loop i in 9 do
                     state[i] = 0;
-                    games[i].grid:clr_ui_bg = &_colors.yellow;
-                    grid.uis[i] := games[i].grid;
-                        // TODO: finally
-                        // grid >> this
+                    games[i].grid.clr_ui_bg = &_colors.yellow;
+                    spawn UIGridItem in grid.uis with
+                        this.idx = i;
+                        this.ui  = &games[i].grid;
+                    end;
                 end
 
-                main.go(&r);
+                call/rec main.go(&r);
 
                 ui_x.bg_clr = &_colors.yellow;
                 ui_o.bg_clr = &_colors.white;
                 global:player = 1;
 
-                var UI* ui;
+                pool UITexture[9] uis;
                 loop do                 // TODO: every
                     var void* game_;
                     var int idx;
@@ -230,21 +236,23 @@ with
 
                     // close myself if win?
                     if game:win? != 0 then
-                        ui = new[9] UITexture with
-                            this.ren = ren;
+                        var UITexture* ui = new UITexture in uis with
+                            this.ren := ren;
                             this.bg_clr = &_colors.gray;
                             if game:win? == 1 then
-                                this.tex = tex_xx;
+                                this.tex := tex_xx;
                             else/if game:win? == 2 then
-                                this.tex = tex_oo;
+                                this.tex := tex_oo;
                             else
-                                this.tex = tex_vv;
+                                this.tex := tex_vv;
                             end
                         end;
-                        grid.go_ui(game:id,ui)      // X or 0 or #
-                            finalize with
-                                //grid.go_ui(game:id,null);
+                            spawn UIGridItem in grid.uis with
+                                this.idx = game:id;
+                                this.ui  := ui;
+                                        // TODO: watched!
                             end;
+                            call/rec grid.go(null);
 
                         state[game:id] = game:win?;
                         //free game;
@@ -259,41 +267,50 @@ with
 
                     // open all cells if going to a closed one
                     if state[idx] != 0 then
-                        loop oth, Game* do
-                            oth:grid:clr_ui_bg = &_colors.yellow;
+                        loop i in 9 do
+                            var Game* oth = &games[i];
+                            oth:grid.clr_ui_bg = &_colors.yellow;
                             emit oth:pse? => 0;
                         end
                     // otherwise, pause all but "idx" cell
                     else
-                        loop oth, Game* do
+                        loop i in 9 do
+                            var Game* oth = &games[i];
                             if oth:id == idx then
-                                oth:grid:clr_ui_bg = &_colors.yellow;
+                                oth:grid.clr_ui_bg = &_colors.yellow;
                                 emit oth:pse? => 0;
                             else
-                                oth:grid:clr_ui_bg = &_colors.white;
+                                oth:grid.clr_ui_bg = &_colors.white;
                                 emit oth:pse? => 1;
                             end
                         end
                     end
 
-                    uis_bar[global:player-1]:bg_clr = &_colors.white;
+                    if global:player == 1 then
+                        ui_x.bg_clr = &_colors.white;
+                        ui_o.bg_clr = &_colors.yellow;
+                    else
+                        ui_x.bg_clr = &_colors.yellow;
+                        ui_o.bg_clr = &_colors.white;
+                    end
                     global:player = 3 - global:player;
-                    uis_bar[global:player-1]:bg_clr = &_colors.yellow;
                 end
             end; // kills all remaining games
 
             var UITexture final with
-                this.ren = ren;
+                this.ren := ren;
                 this.bg_clr = &_colors.gray;
+                this.align_x = _UI_ALIGN_CENTER;
+                this.align_y = _UI_ALIGN_MIDDLE;
                 if res == 1 then
-                    this.tex = tex_xxx;
+                    this.tex := tex_xxx;
                 else/if res == 2 then
-                    this.tex = tex_ooo;
+                    this.tex := tex_ooo;
                 else
-                    this.tex = tex_vvv;
+                    this.tex := tex_vvv;
                 end
             end;
-            final.go(&r);
+            final.go_bg(&r, false);
             await main.ok_clicked;
         end
     end

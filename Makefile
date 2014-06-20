@@ -6,12 +6,12 @@
 
 all:
 	ceu main.ceu
-	gcc -Os main.c $(CFLAGS) -lSDL2 -lSDL2_image -lSDL2_ttf \
+	gcc -Os main.c $(CFLAGS) -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf \
 		-o ult-tic-tac-toe.exe
 
 one:
 	ceu --cpp-args "-D __ULT_GAME_CEU" game.ceu
-	gcc -Os main.c $(CFLAGS) -lSDL2 -lSDL2_image -lSDL2_ttf \
+	gcc -Os main.c $(CFLAGS) -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf \
 		-o ult-tic-tac-toe.exe
 
 clean:
