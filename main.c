@@ -1,8 +1,10 @@
 #include <stdio.h>
 
+/*
 #ifndef DEBUG
 #define DEBUG
 #endif
+*/
 
 #define CEU_SDL_FPS 10
 
@@ -141,7 +143,6 @@ int main (int argc, char *argv[])
 
         // DT/WCLOCK/REDRAW respecting FPS (at most)
         int fps_ok = !SDL_PollEvent(NULL);
-//printf("%d >= %d\n", old, fps_old+1000/CEU_SDL_FPS);
         if (! fps_ok) {
             if (old >= fps_old+1000/CEU_SDL_FPS) {
                 fps_old = old;
@@ -198,7 +199,6 @@ int main (int argc, char *argv[])
         {
             int handled = 1;        // =1 for defined events
             tceu_evtp evtp = (tceu_evtp)(void*)&evt;
-//printf("EVT: %x\n", evt.type);
             switch (evt.type) {
 #ifdef CEU_IN_SDL_QUIT
                 case SDL_QUIT:
@@ -296,7 +296,6 @@ int main (int argc, char *argv[])
 #ifdef CEU_IN_SDL_REDRAW
         //if (redraw && !SDL_PollEvent(NULL)) {
         if (fps_ok) {
-//printf("okok\n");
             ceu_sys_go(&app, CEU_IN_SDL_REDRAW, (tceu_evtp)NULL);
 #ifdef CEU_RET
             if (! app.isAlive)
