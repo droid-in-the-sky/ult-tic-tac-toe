@@ -26,28 +26,28 @@ var int win_w;
 var int win_h;
     _SDL_GetWindowSize(win, &win_w, &win_h);
 
-var _SDL_Renderer* ren;
+var _SDL_Renderer[] ren;
     finalize
         ren = _SDL_CreateRenderer(win, -1, 0);
     with
         _SDL_DestroyRenderer(ren);
     end
 
-var _SDL_Texture* tex_x;
+var _SDL_Texture[] tex_x;
     finalize
         tex_x = _IMG_LoadTexture(ren, "imgs/x.png");
     with
         _SDL_DestroyTexture(tex_x);
     end
     _assert(tex_x != null);
-var _SDL_Texture* tex_xx;
+var _SDL_Texture[] tex_xx;
     finalize
         tex_xx = _IMG_LoadTexture(ren, "imgs/xx.png");
     with
         _SDL_DestroyTexture(tex_xx);
     end
     _assert(tex_xx != null);
-var _SDL_Texture* tex_xxx;
+var _SDL_Texture[] tex_xxx;
     finalize
         tex_xxx = _IMG_LoadTexture(ren, "imgs/xxx.png");
     with
@@ -55,21 +55,21 @@ var _SDL_Texture* tex_xxx;
     end
     _assert(tex_xxx != null);
 
-var _SDL_Texture* tex_o;
+var _SDL_Texture[] tex_o;
     finalize
         tex_o = _IMG_LoadTexture(ren, "imgs/o.png");
     with
         _SDL_DestroyTexture(tex_o);
     end
     _assert(tex_o != null);
-var _SDL_Texture* tex_oo;
+var _SDL_Texture[] tex_oo;
     finalize
         tex_oo = _IMG_LoadTexture(ren, "imgs/oo.png");
     with
         _SDL_DestroyTexture(tex_oo);
     end
     _assert(tex_oo != null);
-var _SDL_Texture* tex_ooo;
+var _SDL_Texture[] tex_ooo;
     finalize
         tex_ooo = _IMG_LoadTexture(ren, "imgs/ooo.png");
     with
@@ -77,14 +77,14 @@ var _SDL_Texture* tex_ooo;
     end
     _assert(tex_ooo != null);
 
-var _SDL_Texture* tex_vv;
+var _SDL_Texture[] tex_vv;
     finalize
         tex_vv = _IMG_LoadTexture(ren, "imgs/vv.png");
     with
         _SDL_DestroyTexture(tex_vv);
     end
     _assert(tex_vv != null);
-var _SDL_Texture* tex_vvv;
+var _SDL_Texture[] tex_vvv;
     finalize
         tex_vvv = _IMG_LoadTexture(ren, "imgs/vvv.png");
     with
@@ -92,7 +92,7 @@ var _SDL_Texture* tex_vvv;
     end
     _assert(tex_vvv != null);
 
-var _SDL_Texture* tex_new;
+var _SDL_Texture[] tex_new;
     finalize
         tex_new = _IMG_LoadTexture(ren, "imgs/new.png");
     with
@@ -106,8 +106,8 @@ var UIGrid main with
             0, 0, 0, 0, 0, 0, 0, 1
         };
     end
-    this.ren      := ren;
-    this.lay      := _lay_main;
+    this.ren      = ren;
+    this.lay      = _lay_main;
     this.lay_lins = 1;
     this.lay_cols = 8;
     this.uis_n    = 2;
@@ -121,11 +121,11 @@ var UIGrid grid with
             6, 7, 8
         };
     end
-    this.ren      := ren;
+    this.ren      = ren;
     this.clr_bg   = &_colors.gray;
     this.spc_x    = 10;
     this.spc_y    = 10;
-    this.lay      := _lay_games;
+    this.lay      = _lay_games;
     this.lay_lins = 3;
     this.lay_cols = 3;
     this.uis_n    = 9;
@@ -141,11 +141,11 @@ var UIGrid bar with
             0, 1, 2, 3, 4
         };
     end
-    this.ren      := ren;
+    this.ren      = ren;
     this.clr_bg   = &_colors.black;
     this.spc_x    = 10;
     this.spc_y    = 10;
-    this.lay      := _lay_bar;
+    this.lay      = _lay_bar;
     this.lay_lins = 5;
     this.lay_cols = 1;
     this.uis_n    = 5;
@@ -156,8 +156,8 @@ end;
     end;
 
 var UITexture ui_x with
-    this.ren := ren;
-    this.tex := tex_x;
+    this.ren = ren;
+    this.tex = tex_x;
 end;
     spawn UIGridItem in bar.uis with
         this.idx = 0;
@@ -165,8 +165,8 @@ end;
     end;
 
 var UITexture ui_o with
-    this.ren := ren;
-    this.tex := tex_o;
+    this.ren = ren;
+    this.tex = tex_o;
 end;
     spawn UIGridItem in bar.uis with
         this.idx = 1;
@@ -174,8 +174,8 @@ end;
     end;
 
 var UITexture ui_new with
-    this.ren := ren;
-    this.tex := tex_new;
+    this.ren = ren;
+    this.tex = tex_new;
 end;
     spawn UIGridItem in bar.uis with
         this.idx = 4;
@@ -208,7 +208,7 @@ with
                 var int gi = 0;
                 var Game[9] games with
                     this.id  = gi;
-                    this.ren := ren;
+                    this.ren = ren;
                     gi = gi + 1;
                 end;
                 loop i in 9 do
@@ -236,21 +236,20 @@ with
 
                     // close myself if win?
                     if game:win? != 0 then
-                        var UITexture* ui = new UITexture in uis with
-                            this.ren := ren;
+                        var UITexture* ui = spawn UITexture in uis with
+                            this.ren = ren;
                             this.bg_clr = &_colors.gray;
                             if game:win? == 1 then
-                                this.tex := tex_xx;
+                                this.tex = tex_xx;
                             else/if game:win? == 2 then
-                                this.tex := tex_oo;
+                                this.tex = tex_oo;
                             else
-                                this.tex := tex_vv;
+                                this.tex = tex_vv;
                             end
                         end;
                             spawn UIGridItem in grid.uis with
                                 this.idx = game:id;
-                                this.ui  := ui;
-                                        // TODO: watched!
+                                this.ui  = ui;
                             end;
                             call/rec grid.go(null);
 
@@ -298,16 +297,16 @@ with
             end; // kills all remaining games
 
             var UITexture final with
-                this.ren := ren;
+                this.ren = ren;
                 this.bg_clr = &_colors.gray;
                 this.align_x = _UI_ALIGN_CENTER;
                 this.align_y = _UI_ALIGN_MIDDLE;
                 if res == 1 then
-                    this.tex := tex_xxx;
+                    this.tex = tex_xxx;
                 else/if res == 2 then
-                    this.tex := tex_ooo;
+                    this.tex = tex_ooo;
                 else
-                    this.tex := tex_vvv;
+                    this.tex = tex_vvv;
                 end
             end;
             final.go_bg(&r, false);
