@@ -14,40 +14,40 @@ var int player;
 input void SDL_REDRAW;
 input void SDL_QUIT;
 
-var _SDL_Window* win;
+var _SDL_Window&? win;
     finalize
         win = _SDL_CreateWindow("The Ultimate Tic-Tac-Toe",
                             500, 1300, 800, 480, _SDL_WINDOW_SHOWN);
     with
-        _SDL_DestroyWindow(win);
+        _SDL_DestroyWindow(&win);
     end
 
 var int win_w;
 var int win_h;
-    _SDL_GetWindowSize(win, &win_w, &win_h);
+    _SDL_GetWindowSize(&win, &win_w, &win_h);
 
-var _SDL_Renderer& ren;
+var _SDL_Renderer&? ren;
     finalize
-        ren = _SDL_CreateRenderer(win, -1, 0);
+        ren = _SDL_CreateRenderer(&win, -1, 0);
     with
         _SDL_DestroyRenderer(&ren);
     end
 
-var _SDL_Texture& tex_x;
+var _SDL_Texture&? tex_x;
     finalize
         tex_x = _IMG_LoadTexture(&ren, "imgs/x.png");
     with
         _SDL_DestroyTexture(&tex_x);
     end
     _assert(&tex_x != null);
-var _SDL_Texture& tex_xx;
+var _SDL_Texture&? tex_xx;
     finalize
         tex_xx = _IMG_LoadTexture(&ren, "imgs/xx.png");
     with
         _SDL_DestroyTexture(&tex_xx);
     end
     _assert(&tex_xx != null);
-var _SDL_Texture& tex_xxx;
+var _SDL_Texture&? tex_xxx;
     finalize
         tex_xxx = _IMG_LoadTexture(&ren, "imgs/xxx.png");
     with
@@ -55,21 +55,21 @@ var _SDL_Texture& tex_xxx;
     end
     _assert(&tex_xxx != null);
 
-var _SDL_Texture& tex_o;
+var _SDL_Texture&? tex_o;
     finalize
         tex_o = _IMG_LoadTexture(&ren, "imgs/o.png");
     with
         _SDL_DestroyTexture(&tex_o);
     end
     _assert(&tex_o != null);
-var _SDL_Texture& tex_oo;
+var _SDL_Texture&? tex_oo;
     finalize
         tex_oo = _IMG_LoadTexture(&ren, "imgs/oo.png");
     with
         _SDL_DestroyTexture(&tex_oo);
     end
     _assert(&tex_oo != null);
-var _SDL_Texture& tex_ooo;
+var _SDL_Texture&? tex_ooo;
     finalize
         tex_ooo = _IMG_LoadTexture(&ren, "imgs/ooo.png");
     with
@@ -77,14 +77,14 @@ var _SDL_Texture& tex_ooo;
     end
     _assert(&tex_ooo != null);
 
-var _SDL_Texture& tex_vv;
+var _SDL_Texture&? tex_vv;
     finalize
         tex_vv = _IMG_LoadTexture(&ren, "imgs/vv.png");
     with
         _SDL_DestroyTexture(&tex_vv);
     end
     _assert(&tex_vv != null);
-var _SDL_Texture& tex_vvv;
+var _SDL_Texture&? tex_vvv;
     finalize
         tex_vvv = _IMG_LoadTexture(&ren, "imgs/vvv.png");
     with
@@ -92,7 +92,7 @@ var _SDL_Texture& tex_vvv;
     end
     _assert(&tex_vvv != null);
 
-var _SDL_Texture& tex_new;
+var _SDL_Texture&? tex_new;
     finalize
         tex_new = _IMG_LoadTexture(&ren, "imgs/new.png");
     with
@@ -234,14 +234,14 @@ with
                     var Game* game = (Game*) game_;
                     _assert(game != null);
 
-                    // close myself if win?
-                    if game:win? != 0 then
+                    // close myself if won
+                    if game:won != 0 then
                         var UITexture* ui = spawn UITexture in uis with
                             this.ren = ren;
                             this.bg_clr = &_colors.gray;
-                            if game:win? == 1 then
+                            if game:won == 1 then
                                 this.tex = tex_xx;
-                            else/if game:win? == 2 then
+                            else/if game:won == 2 then
                                 this.tex = tex_oo;
                             else
                                 this.tex = tex_vv;
@@ -253,7 +253,7 @@ with
                             end;
                             call/rec grid.go(null);
 
-                        state[game:id] = game:win?;
+                        state[game:id] = game:won;
                         //free game;
                             // no references to it (removed form grid)
 
@@ -269,7 +269,7 @@ with
                         loop i in 9 do
                             var Game* oth = &games[i];
                             oth:grid.clr_ui_bg = &_colors.yellow;
-                            emit oth:pse? => 0;
+                            emit oth:pse => 0;
                         end
                     // otherwise, pause all but "idx" cell
                     else
@@ -277,10 +277,10 @@ with
                             var Game* oth = &games[i];
                             if oth:id == idx then
                                 oth:grid.clr_ui_bg = &_colors.yellow;
-                                emit oth:pse? => 0;
+                                emit oth:pse => 0;
                             else
                                 oth:grid.clr_ui_bg = &_colors.white;
-                                emit oth:pse? => 1;
+                                emit oth:pse => 1;
                             end
                         end
                     end

@@ -82,14 +82,14 @@ end
 
 class Game with
     var int             id   = -1;
-    var int             win? = 0;       // not really a bool
+    var int             won = 0;       // not really a bool
     var _SDL_Renderer&  ren;
     var UIGrid&         grid;
 
-    event int pse?;
+    event int pse;
 do
     _assert(this.id   >= 0);
-    _assert(this.win? == 0);
+    _assert(this.won == 0);
 
     var s8[9] state;
         loop i in 9 do
@@ -110,13 +110,13 @@ do
     this.grid = g;
 
     // images x - o
-    var _SDL_Texture& tex_x;
+    var _SDL_Texture&? tex_x;
         finalize
             tex_x = _IMG_LoadTexture(&ren, "imgs/x.png");
         with
             _SDL_DestroyTexture(&tex_x);
         end
-    var _SDL_Texture& tex_o;
+    var _SDL_Texture&? tex_o;
         finalize
             tex_o = _IMG_LoadTexture(&ren, "imgs/o.png");
         with
@@ -124,21 +124,21 @@ do
         end
 
     pool UITexture[9] uis;
-    pause/if this.pse? do
+    pause/if this.pse do
         loop do
             var int idx = await g.ok_uiclicked;
 
             state[idx] = global:player;
-            this.win?  = _Game_check(state, idx, global:player);
+            this.won  = _Game_check(state, idx, global:player);
 
             // clicked on an occupied square?
-            var bool occupied? = false;
+            var bool is_occupied = false;
             loop (UIGridItem*) it in grid.uis do
                 if it:idx == idx then
-                    occupied? = true;
+                    is_occupied = true;
                 end
             end
-            if occupied? then
+            if is_occupied then
                 continue;
             end
 
@@ -159,7 +159,7 @@ do
             // notify main application
             emit global:ok_game => (&this, idx);
 
-            if this.win? then
+            if this.won then
                 await FOREVER;      // TODO: chg to break
             end
         end
@@ -168,21 +168,21 @@ end;
 
 #ifdef __ULT_GAME_CEU
 
-var _SDL_Window* win;
+var _SDL_Window&? win;
     finalize
         win = _SDL_CreateWindow("The Ultimate Tic-Tac-Toe",
                             500, 1300, 800, 480, _SDL_WINDOW_SHOWN);
     with
-        _SDL_DestroyWindow(win);
+        _SDL_DestroyWindow(&win);
     end
 
 var int win_w;
 var int win_h;
-    _SDL_GetWindowSize(win, &win_w, &win_h);
+    _SDL_GetWindowSize(&win, &win_w, &win_h);
 
-var _SDL_Renderer& ren;
+var _SDL_Renderer&? ren;
     finalize
-        ren = _SDL_CreateRenderer(win, -1, 0);
+        ren = _SDL_CreateRenderer(&win, -1, 0);
     with
         _SDL_DestroyRenderer(&ren);
     end
