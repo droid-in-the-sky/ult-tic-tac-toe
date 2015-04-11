@@ -98,8 +98,8 @@ do
 
     var UIGrid g with
         this.ren         = ren;
-        this.clr_cell_fr = &_colors.black;
-        this.clr_ui_bg   = &_colors.white;
+        this.clr_cell_fr = SDL_COLOR_BLACK;
+        this.clr_ui_bg   = SDL_COLOR_WHITE;
         this.pad_x       = 2;
         this.pad_y       = 2;
         this.lay_lins    = 3;
@@ -211,11 +211,7 @@ with
         end;
 
         do
-            var _SDL_Rect r;
-                r.x = 0;
-                r.y = 0;
-                r.w = win_w;
-                r.h = win_h;
+            var SDL_Rect r = SDL_Rect(0,0, win_w,win_h);
             call/rec game.grid.go_bg(&r, true);
         end
 
@@ -236,7 +232,7 @@ with
 
         var UITexture ui with
             this.ren = ren;
-            this.bg_clr = &_colors.gray;
+            this.bg_clr = SDL_COLOR_GRAY;
             this.align_x = _UI_ALIGN_CENTER;
             this.align_y = _UI_ALIGN_CENTER;
             if global:player == 1 then
@@ -247,9 +243,7 @@ with
         end;
 
         do
-            var _SDL_Rect r;
-                r.x = win_w/2;
-                r.y = win_h/2;
+            var SDL_Rect r = SDL_Rect(win_w/2,win_h/2, 0,0);
             ui.go(&r);
         end
 

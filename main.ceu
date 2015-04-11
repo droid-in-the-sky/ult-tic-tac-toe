@@ -122,7 +122,7 @@ var UIGrid grid with
         };
     end
     this.ren      = ren;
-    this.clr_bg   = &_colors.gray;
+    this.clr_bg   = SDL_COLOR_GRAY;
     this.spc_x    = 10;
     this.spc_y    = 10;
     this.lay      = _lay_games;
@@ -142,7 +142,7 @@ var UIGrid bar with
         };
     end
     this.ren      = ren;
-    this.clr_bg   = &_colors.black;
+    this.clr_bg   = SDL_COLOR_BLACK;
     this.spc_x    = 10;
     this.spc_y    = 10;
     this.lay      = _lay_bar;
@@ -156,8 +156,9 @@ end;
     end;
 
 var UITexture ui_x with
-    this.ren = ren;
-    this.tex = tex_x;
+    this.ren    = ren;
+    this.tex    = tex_x;
+    this.bg_clr = SDL_COLOR_WHITE;
 end;
     spawn UIGridItem in bar.uis with
         this.idx = 0;
@@ -165,8 +166,9 @@ end;
     end;
 
 var UITexture ui_o with
-    this.ren = ren;
-    this.tex = tex_o;
+    this.ren    = ren;
+    this.tex    = tex_o;
+    this.bg_clr = SDL_COLOR_WHITE;
 end;
     spawn UIGridItem in bar.uis with
         this.idx = 1;
@@ -196,11 +198,7 @@ with
             await FOREVER;
 ***/
         with
-            var _SDL_Rect r;
-                r.x = 0;
-                r.y = 0;
-                r.w = win_w;
-                r.h = win_h;
+            var SDL_Rect r = SDL_Rect(0,0, win_w,win_h);
 
             // final result
             var int res = do  // parent for Games
@@ -213,7 +211,7 @@ with
                 end;
                 loop i in 9 do
                     state[i] = 0;
-                    games[i].grid.clr_ui_bg = &_colors.yellow;
+                    games[i].grid.clr_ui_bg = SDL_COLOR_YELLOW;
                     spawn UIGridItem in grid.uis with
                         this.idx = i;
                         this.ui  = &games[i].grid;
@@ -222,8 +220,8 @@ with
 
                 call/rec main.go(&r);
 
-                ui_x.bg_clr = &_colors.yellow;
-                ui_o.bg_clr = &_colors.white;
+                ui_x.bg_clr = SDL_COLOR_YELLOW;
+                ui_o.bg_clr = SDL_COLOR_WHITE;
                 global:player = 1;
 
                 pool UITexture[9] uis;
@@ -238,7 +236,7 @@ with
                     if game:won != 0 then
                         var UITexture* ui = spawn UITexture in uis with
                             this.ren = ren;
-                            this.bg_clr = &_colors.gray;
+                            this.bg_clr = SDL_COLOR_GRAY;
                             if game:won == 1 then
                                 this.tex = tex_xx;
                             else/if game:won == 2 then
@@ -268,7 +266,7 @@ with
                     if state[idx] != 0 then
                         loop i in 9 do
                             var Game* oth = &games[i];
-                            oth:grid.clr_ui_bg = &_colors.yellow;
+                            oth:grid.clr_ui_bg = SDL_COLOR_YELLOW;
                             emit oth:pse => 0;
                         end
                     // otherwise, pause all but "idx" cell
@@ -276,21 +274,21 @@ with
                         loop i in 9 do
                             var Game* oth = &games[i];
                             if oth:id == idx then
-                                oth:grid.clr_ui_bg = &_colors.yellow;
+                                oth:grid.clr_ui_bg = SDL_COLOR_YELLOW;
                                 emit oth:pse => 0;
                             else
-                                oth:grid.clr_ui_bg = &_colors.white;
+                                oth:grid.clr_ui_bg = SDL_COLOR_WHITE;
                                 emit oth:pse => 1;
                             end
                         end
                     end
 
                     if global:player == 1 then
-                        ui_x.bg_clr = &_colors.white;
-                        ui_o.bg_clr = &_colors.yellow;
+                        ui_x.bg_clr = SDL_COLOR_WHITE;
+                        ui_o.bg_clr = SDL_COLOR_YELLOW;
                     else
-                        ui_x.bg_clr = &_colors.yellow;
-                        ui_o.bg_clr = &_colors.white;
+                        ui_x.bg_clr = SDL_COLOR_YELLOW;
+                        ui_o.bg_clr = SDL_COLOR_WHITE;
                     end
                     global:player = 3 - global:player;
                 end
@@ -298,7 +296,7 @@ with
 
             var UITexture final with
                 this.ren = ren;
-                this.bg_clr = &_colors.gray;
+                this.bg_clr = SDL_COLOR_GRAY;
                 this.align_x = _UI_ALIGN_CENTER;
                 this.align_y = _UI_ALIGN_MIDDLE;
                 if res == 1 then
