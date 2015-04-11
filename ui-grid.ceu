@@ -207,7 +207,6 @@ do
         every SDL_REDRAW do
             // TODO: clr_bg vs bg_clr
             if bg_clr? then
-_printf("GRID\n");
                 _SDL_SetRenderDrawColor(&ren,
                     bg_clr.r,bg_clr.g,bg_clr.b,bg_clr.a);
                 _SDL_RenderFillRect(&ren, (_SDL_Rect*)&this.rect);
@@ -216,18 +215,7 @@ _printf("GRID\n");
                 _SDL_SetRenderDrawColor(&ren,
                         clr_bg.r,clr_bg.g,clr_bg.b,clr_bg.a);
                 _SDL_RenderFillRect(&ren, (_SDL_Rect*)&rect);
-/*
-_printf("oioi %d %d %d\n", clr_bg.r, clr_bg.g, clr_bg.b);
-                _boxColor(&ren, rect.x,rect.y,rect.x+rect.w,rect.y+rect.h, &clr_bg);
-*/
             end
-/*
-//clr_cell_bg = &_colors.white;
-//clr_ui_bg = &_colors.white;
-clr_cell_fr = &_colors.white;
-clr_ui_fr = &_colors.black;
-clr_fr = &_colors.red;
-*/
             loop/UI_GRID_MAX_UIS i in uis_n do
                 if clr_cell_bg? then
                     _SDL_SetRenderDrawColor(&ren,
