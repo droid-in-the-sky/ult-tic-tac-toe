@@ -2,11 +2,16 @@
 #include "sdl-colors.ceu"
 #include "ui-grid.ceu"
 
+interface IGame with
+    var int id;
+    var int won;
+end
+
 interface Global with
-    event (void*,int) ok_game;   // id,idx
+    event (int,int,int) ok_game;   // id,won,idx
     var int player;
 end
-event (void*,int) ok_game;
+event (int,int,int) ok_game;
 var int player;
 
 #include "game.ceu"
@@ -19,113 +24,102 @@ var _SDL_Window&? win;
         win = _SDL_CreateWindow("The Ultimate Tic-Tac-Toe",
                             500, 1300, 800, 480, _SDL_WINDOW_SHOWN);
     with
-        _SDL_DestroyWindow(&win);
+        _SDL_DestroyWindow(&win!);
     end
 
 var int win_w;
 var int win_h;
-    _SDL_GetWindowSize(&win, &win_w, &win_h);
+    _SDL_GetWindowSize(&win!, &win_w, &win_h);
 
 var _SDL_Renderer&? ren;
     finalize
-        ren = _SDL_CreateRenderer(&win, -1, 0);
+        ren = _SDL_CreateRenderer(&win!, -1, 0);
     with
-        _SDL_DestroyRenderer(&ren);
+        _SDL_DestroyRenderer(&ren!);
     end
 
 var _SDL_Texture&? tex_x;
     finalize
-        tex_x = _IMG_LoadTexture(&ren, "imgs/x.png");
+        tex_x = _IMG_LoadTexture(&ren!, "imgs/x.png");
     with
-        _SDL_DestroyTexture(&tex_x);
+        _SDL_DestroyTexture(&tex_x!);
     end
-    _assert(&tex_x != null);
 var _SDL_Texture&? tex_xx;
     finalize
-        tex_xx = _IMG_LoadTexture(&ren, "imgs/xx.png");
+        tex_xx = _IMG_LoadTexture(&ren!, "imgs/xx.png");
     with
-        _SDL_DestroyTexture(&tex_xx);
+        _SDL_DestroyTexture(&tex_xx!);
     end
-    _assert(&tex_xx != null);
 var _SDL_Texture&? tex_xxx;
     finalize
-        tex_xxx = _IMG_LoadTexture(&ren, "imgs/xxx.png");
+        tex_xxx = _IMG_LoadTexture(&ren!, "imgs/xxx.png");
     with
-        _SDL_DestroyTexture(&tex_xxx);
+        _SDL_DestroyTexture(&tex_xxx!);
     end
-    _assert(&tex_xxx != null);
 
 var _SDL_Texture&? tex_o;
     finalize
-        tex_o = _IMG_LoadTexture(&ren, "imgs/o.png");
+        tex_o = _IMG_LoadTexture(&ren!, "imgs/o.png");
     with
-        _SDL_DestroyTexture(&tex_o);
+        _SDL_DestroyTexture(&tex_o!);
     end
-    _assert(&tex_o != null);
 var _SDL_Texture&? tex_oo;
     finalize
-        tex_oo = _IMG_LoadTexture(&ren, "imgs/oo.png");
+        tex_oo = _IMG_LoadTexture(&ren!, "imgs/oo.png");
     with
-        _SDL_DestroyTexture(&tex_oo);
+        _SDL_DestroyTexture(&tex_oo!);
     end
-    _assert(&tex_oo != null);
 var _SDL_Texture&? tex_ooo;
     finalize
-        tex_ooo = _IMG_LoadTexture(&ren, "imgs/ooo.png");
+        tex_ooo = _IMG_LoadTexture(&ren!, "imgs/ooo.png");
     with
-        _SDL_DestroyTexture(&tex_ooo);
+        _SDL_DestroyTexture(&tex_ooo!);
     end
-    _assert(&tex_ooo != null);
 
 var _SDL_Texture&? tex_vv;
     finalize
-        tex_vv = _IMG_LoadTexture(&ren, "imgs/vv.png");
+        tex_vv = _IMG_LoadTexture(&ren!, "imgs/vv.png");
     with
-        _SDL_DestroyTexture(&tex_vv);
+        _SDL_DestroyTexture(&tex_vv!);
     end
-    _assert(&tex_vv != null);
 var _SDL_Texture&? tex_vvv;
     finalize
-        tex_vvv = _IMG_LoadTexture(&ren, "imgs/vvv.png");
+        tex_vvv = _IMG_LoadTexture(&ren!, "imgs/vvv.png");
     with
-        _SDL_DestroyTexture(&tex_vvv);
+        _SDL_DestroyTexture(&tex_vvv!);
     end
-    _assert(&tex_vvv != null);
 
 var _SDL_Texture&? tex_new;
     finalize
-        tex_new = _IMG_LoadTexture(&ren, "imgs/new.png");
+        tex_new = _IMG_LoadTexture(&ren!, "imgs/new.png");
     with
-        _SDL_DestroyTexture(&tex_new);
+        _SDL_DestroyTexture(&tex_new!);
     end
-    _assert(&tex_new != null);
+
+var int[8] lay_main = [
+    0, 0, 0, 0, 0, 0, 0, 1
+];
 
 var UIGrid main with
-    native do
-        int lay_main[8] = {
-            0, 0, 0, 0, 0, 0, 0, 1
-        };
-    end
-    this.ren      = ren;
-    this.lay      = _lay_main;
+    this.ren      = ren!;
+    this.lay      = lay_main;
     this.lay_lins = 1;
     this.lay_cols = 8;
     this.uis_n    = 2;
 end;
 
+var int[9] lay_games = [
+    0, 1, 2,
+    3, 4, 5,
+    6, 7, 8
+];
+
 var UIGrid grid with
-    native do
-        int lay_games[9] = {
-            0, 1, 2,
-            3, 4, 5,
-            6, 7, 8
-        };
-    end
-    this.ren      = ren;
+    this.ren      = ren!;
     this.clr_bg   = SDL_COLOR_GRAY;
     this.spc_x    = 10;
     this.spc_y    = 10;
-    this.lay      = _lay_games;
+    this.lay      = lay_games;
     this.lay_lins = 3;
     this.lay_cols = 3;
     this.uis_n    = 9;
@@ -135,17 +129,16 @@ end;
         this.ui  = &grid;
     end;
 
+var int[5] lay_bar = [
+    0, 1, 2, 3, 4
+];
+
 var UIGrid bar with
-    native do
-        int lay_bar[5] = {
-            0, 1, 2, 3, 4
-        };
-    end
-    this.ren      = ren;
+    this.ren      = ren!;
     this.clr_bg   = SDL_COLOR_BLACK;
     this.spc_x    = 10;
     this.spc_y    = 10;
-    this.lay      = _lay_bar;
+    this.lay      = lay_bar;
     this.lay_lins = 5;
     this.lay_cols = 1;
     this.uis_n    = 5;
@@ -156,8 +149,8 @@ end;
     end;
 
 var UITexture ui_x with
-    this.ren    = ren;
-    this.tex    = tex_x;
+    this.ren    = ren!;
+    this.tex    = tex_x!;
     this.bg_clr = SDL_COLOR_WHITE;
 end;
     spawn UIGridItem in bar.uis with
@@ -166,8 +159,8 @@ end;
     end;
 
 var UITexture ui_o with
-    this.ren    = ren;
-    this.tex    = tex_o;
+    this.ren    = ren!;
+    this.tex    = tex_o!;
     this.bg_clr = SDL_COLOR_WHITE;
 end;
     spawn UIGridItem in bar.uis with
@@ -176,8 +169,8 @@ end;
     end;
 
 var UITexture ui_new with
-    this.ren = ren;
-    this.tex = tex_new;
+    this.ren = ren!;
+    this.tex = tex_new!;
 end;
     spawn UIGridItem in bar.uis with
         this.idx = 4;
@@ -202,19 +195,18 @@ with
 
             // final result
             var int res = do  // parent for Games
-                var s8[9] state;
+                var s8[9] state = [0,0,0,0,0,0,0,0,0];
                 var int gi = 0;
                 var Game[9] games with
                     this.id  = gi;
-                    this.ren = ren;
+                    this.ren = ren!;
                     gi = gi + 1;
                 end;
                 loop i in 9 do
-                    state[i] = 0;
-                    games[i].grid.clr_ui_bg = SDL_COLOR_YELLOW;
+                    games[i].grid!:clr_ui_bg = SDL_COLOR_YELLOW;
                     spawn UIGridItem in grid.uis with
                         this.idx = i;
-                        this.ui  = &games[i].grid;
+                        this.ui  = games[i].grid!;
                     end;
                 end
 
@@ -226,37 +218,34 @@ with
 
                 pool UITexture[9] uis;
                 loop do                 // TODO: every
-                    var void* game_;
-                    var int idx;
-                    (game_,idx) = await global:ok_game;
-                    var Game* game = (Game*) game_;
-                    _assert(game != null);
+                    var int id, won, idx;
+                    (id,won,idx) = await global:ok_game;
 
                     // close myself if won
-                    if game:won != 0 then
-                        var UITexture* ui = spawn UITexture in uis with
-                            this.ren = ren;
+                    if won != 0 then
+                        var UITexture*? ui = spawn UITexture in uis with
+                            this.ren = ren!;
                             this.bg_clr = SDL_COLOR_GRAY;
-                            if game:won == 1 then
-                                this.tex = tex_xx;
-                            else/if game:won == 2 then
-                                this.tex = tex_oo;
+                            if won == 1 then
+                                this.tex = tex_xx!;
+                            else/if won == 2 then
+                                this.tex = tex_oo!;
                             else
-                                this.tex = tex_vv;
+                                this.tex = tex_vv!;
                             end
                         end;
                             spawn UIGridItem in grid.uis with
-                                this.idx = game:id;
-                                this.ui  = ui;
+                                this.idx = id;
+                                this.ui  = ui!;
                             end;
                             call/rec grid.go(null);
 
-                        state[game:id] = game:won;
+                        state[id] = won;
                         //free game;
                             // no references to it (removed form grid)
 
                         var int res_ =
-                            _Game_check(state, game:id, global:player);
+                            _Game_check(state, id, global:player);
                         if res_ != 0 then
                             escape res_;
                         end
@@ -266,7 +255,7 @@ with
                     if state[idx] != 0 then
                         loop i in 9 do
                             var Game* oth = &games[i];
-                            oth:grid.clr_ui_bg = SDL_COLOR_YELLOW;
+                            oth:grid!:clr_ui_bg = SDL_COLOR_YELLOW;
                             emit oth:pse => 0;
                         end
                     // otherwise, pause all but "idx" cell
@@ -274,10 +263,10 @@ with
                         loop i in 9 do
                             var Game* oth = &games[i];
                             if oth:id == idx then
-                                oth:grid.clr_ui_bg = SDL_COLOR_YELLOW;
+                                oth:grid!:clr_ui_bg = SDL_COLOR_YELLOW;
                                 emit oth:pse => 0;
                             else
-                                oth:grid.clr_ui_bg = SDL_COLOR_WHITE;
+                                oth:grid!:clr_ui_bg = SDL_COLOR_WHITE;
                                 emit oth:pse => 1;
                             end
                         end
@@ -295,16 +284,16 @@ with
             end; // kills all remaining games
 
             var UITexture final with
-                this.ren = ren;
+                this.ren = ren!;
                 this.bg_clr = SDL_COLOR_GRAY;
                 this.align_x = _UI_ALIGN_CENTER;
                 this.align_y = _UI_ALIGN_MIDDLE;
                 if res == 1 then
-                    this.tex = tex_xxx;
+                    this.tex = tex_xxx!;
                 else/if res == 2 then
-                    this.tex = tex_ooo;
+                    this.tex = tex_ooo!;
                 else
-                    this.tex = tex_vvv;
+                    this.tex = tex_vvv!;
                 end
             end;
             final.go_bg(&r, false);
@@ -313,7 +302,7 @@ with
     end
 with
     every SDL_REDRAW do
-        _SDL_RenderPresent(&ren);
+        _SDL_RenderPresent(&ren!);
     end
 end
 
