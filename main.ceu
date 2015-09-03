@@ -296,7 +296,7 @@ with
                     this.tex = &tex_vvv!;
                 end
             end;
-            final.go_bg(&&r, false);
+            call/rec final.go_bg(&&r, false);
             await main.ok_clicked;
         end
     end

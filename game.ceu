@@ -235,7 +235,7 @@ with
 
         do
             var SDL_Rect r = SDL_Rect(win_w/2,win_h/2, 0,0);
-            ui.go(&&r);
+            call/rec ui.go(&&r);
         end
 
         await game.grid!:ok_clicked;
