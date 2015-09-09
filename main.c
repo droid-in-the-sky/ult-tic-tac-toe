@@ -12,7 +12,9 @@ int CEU_TIMEMACHINE_ON = 0;
 #define CEU_TIMEMACHINE_ON 0
 #endif
 
+#ifndef SIMULATION_TEST
 #define CEU_FPS 50
+#endif
 
 // definitely lost: 2,478 bytes in 17 blocks
 
@@ -39,6 +41,26 @@ int CEU_TIMEMACHINE_ON = 0;
 #endif
 
 #include <assert.h>
+
+#define ceu_out_assert(v) ceu_sys_assert(v)
+void ceu_sys_assert (int v) {
+    assert(v);
+}
+
+#define ceu_out_log(m,s) ceu_sys_log(m,s)
+void ceu_sys_log (int mode, long s) {
+    switch (mode) {
+        case 0:
+            printf("%s", (char*)s);
+            break;
+        case 1:
+            printf("%lX", s);
+            break;
+        case 2:
+            printf("%ld", s);
+            break;
+    }
+}
 
 #include "_ceu_app.h"
 
@@ -67,20 +89,22 @@ int main (int argc, char *argv[])
     int fps_next = (1000/CEU_FPS);
 #endif
 
-#ifdef CEU_THREADS
-    // just before executing CEU code
-    CEU_THREADS_MUTEX_LOCK(&CEU.threads_mutex);
-#endif
-
     tceu_app app;
         app.data = (tceu_org*) &CEU_DATA;
         app.init = &ceu_app_init;
+
+#ifdef CEU_THREADS
+    // just before executing CEU code
+    CEU_THREADS_MUTEX_LOCK(&app.threads_mutex);
+#endif
 
     app.init(&app);    /* calls CEU_THREADS_MUTEX_LOCK() */
 #ifdef CEU_RET
     if (! app.isAlive)
         goto END;
 #endif
+
+#ifndef SIMULATION_TEST
 
 #ifdef CEU_IN_OS_START_
     ceu_sys_go(&app, CEU_IN_OS_START_, NULL);
@@ -116,6 +140,8 @@ if (!CEU_TIMEMACHINE_ON) {
 }
 #endif
 
+#endif  /* SIMULATION_TEST */
+
     SDL_Event evt;
 #ifdef __ANDROID__
     int isPaused = 0;
@@ -125,7 +151,7 @@ if (!CEU_TIMEMACHINE_ON) {
     {
 #ifdef CEU_THREADS
         // unlock from INIT->START->REDRAW or last loop iteration
-        CEU_THREADS_MUTEX_UNLOCK(&CEU.threads_mutex);
+        CEU_THREADS_MUTEX_UNLOCK(&app.threads_mutex);
 #endif
 
         /*
@@ -167,6 +193,8 @@ if (!CEU_TIMEMACHINE_ON) {
             has = SDL_WaitEventTimeout(&evt, tm);
         }
 
+#ifndef SIMULATION_TEST
+
         u32 now = SDL_GetTicks();
         s32 dt_ms = (now - old);
         assert(dt_ms >= 0);
@@ -181,7 +209,7 @@ if (!CEU_TIMEMACHINE_ON) {
             dt_ms = (1000/CEU_FPS);
             fps_next = (dt_ms + togo);
             if (fps_next < 0) {
-printf("[TODO: main.c] delayed %d\n", -fps_next);
+/*printf("[TODO: main.c] delayed %d\n", -fps_next);*/
                 fps_next = 0;
             }
         } else {
@@ -196,7 +224,7 @@ printf("[TODO: main.c] delayed %d\n", -fps_next);
 
 #ifdef CEU_THREADS
         // just before executing CEU code
-        CEU_THREADS_MUTEX_LOCK(&CEU.threads_mutex);
+        CEU_THREADS_MUTEX_LOCK(&app.threads_mutex);
 #endif
 
 #ifdef __ANDROID__
@@ -452,6 +480,8 @@ if (!CEU_TIMEMACHINE_ON) {
 }
 #endif
 
+#endif  /* SIMULATION_TEST */
+
 /* TODO: "_" events */
 #ifdef CEU_ASYNCS
         if (app.pendingAsyncs) {
@@ -466,7 +496,7 @@ if (!CEU_TIMEMACHINE_ON) {
 END:
 #ifdef CEU_THREADS
     // only reachable if LOCKED
-    CEU_THREADS_MUTEX_UNLOCK(&CEU.threads_mutex);
+    CEU_THREADS_MUTEX_UNLOCK(&app.threads_mutex);
 #endif
     SDL_Quit();         // TODO: slow
 #ifdef CEU_RET
