@@ -1,20 +1,18 @@
-CFLAGS = -D CEU_DEBUG
-#CFLAGS = -DDEBUG -g -O0 -v -da -Q #-pg
-# valgrind --error-limit=no --leak-check=full ./mtg_trader
-# valgrind --tool=massif ./mtg_trader
-# ms_print massif.out.19214 |less
+###############################################################################
+# EDIT
+###############################################################################
 
-all:
-	ceu main.ceu
-	gcc -Os main.c $(CFLAGS) -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf \
-		-o ult-tic-tac-toe.exe
+SDL_DIR ?= $(error set path to "<ceu-sdl>" repository)
+CEU_DIR ?= $(error set path to "<ceu>" repository)
 
-one:
-	ceu --cpp-args "-D __ULT_GAME_CEU" game.ceu
-	gcc -Os main.c $(CFLAGS) -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf \
-		-o ult-tic-tac-toe.exe
+###############################################################################
+# DO NOT EDIT
+###############################################################################
 
-clean:
-	rm -f *.exe _ceu_
+SRC = src/main.ceu
+ARCH_DIR ?= $(SDL_DIR)/arch
 
-.PHONY: all clean
+_all: all
+
+include $(SDL_DIR)/Makefile
+include $(CEU_DIR)/Makefile

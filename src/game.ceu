@@ -3,9 +3,9 @@
 
 #include "sdl.ceu"
 #include "sdl-colors.ceu"
-#include "ui.ceu"
-#include "ui-texture.ceu"
-#include "ui-grid.ceu"
+#include "ui/ui.ceu"
+#include "ui/texture.ceu"
+#include "ui/grid.ceu"
 
 input void SDL_REDRAW;
 input void SDL_QUIT;

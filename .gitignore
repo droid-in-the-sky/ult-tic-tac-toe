@@ -1,8 +1,8 @@
-ult-tic-tac-toe.exe
 .*.swp
 .*.swo
 _ceu_*
 *.ceu_m4
+build/
 android-project/assets/
 android-project/bin/
 android-project/files/
