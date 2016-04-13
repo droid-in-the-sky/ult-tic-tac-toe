@@ -9,7 +9,6 @@ SDL_DIR ?= $(error set absolute path to "<ceu-sdl>" repository)
 ###############################################################################
 
 SRC = src/main.ceu
-ARCH_DIR ?= $(SDL_DIR)/arch
 
 _all: all
 
